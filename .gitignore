@@ -1,0 +1,53 @@
+# =========================
+# Dependencies
+# =========================
+backend/node_modules/
+desktop-app/node_modules/
+
+# =========================
+# Environment
+# =========================
+backend/.env
+backend/.env.*
+desktop-app/.env
+desktop-app/.env.*
+
+# =========================
+# Build Output
+# =========================
+backend/dist/
+desktop-app/dist/
+
+# =========================
+# Logs
+# =========================
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# =========================
+# Cache
+# =========================
+.cache/
+.parcel-cache/
+.vite/
+*.tsbuildinfo
+
+# =========================
+# IDE
+# =========================
+.vscode/
+.idea/
+
+# =========================
+# Operating System
+# =========================
+.DS_Store
+Thumbs.db
+
+# =========================
+# Prisma
+# =========================
+backend/prisma/dev.db
+backend/prisma/dev.db-journal

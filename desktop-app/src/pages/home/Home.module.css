@@ -1,0 +1,786 @@
+@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap");
+
+/* ==========================================================================
+   This page consumes tokens from tokens.css directly (--surface-*,
+   --accent-*, --text-*, --font-*, --radius-*, --shadow-*, --ease-*).
+   No local theme redefinition — dark/light is controlled globally by
+   [data-theme] on <html>, same as the rest of the app.
+   The only token added locally is --font-mono, for the clock/data readouts,
+   since tokens.css doesn't define one.
+   ========================================================================== */
+
+.page {
+  --font-mono: "JetBrains Mono", "SF Mono", monospace;
+
+  position: relative;
+  flex: 1;
+  height: 100%;
+  min-width: 0;
+  overflow-y: hidden;
+  overflow-x: hidden;
+  background: radial-gradient(
+    120% 100% at 50% -10%,
+    var(--surface-raised) 0%,
+    var(--surface-base) 45%,
+    var(--surface-base) 100%
+  );
+  color: var(--text-primary);
+  font-family: var(--font-body);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* ==========================================================================
+   Ambient background
+   ========================================================================== */
+
+.mesh {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    radial-gradient(1px 1px at 20% 30%, rgba(255, 255, 255, 0.05) 0, transparent 0),
+    radial-gradient(1px 1px at 70% 65%, rgba(255, 255, 255, 0.04) 0, transparent 0),
+    radial-gradient(1px 1px at 40% 80%, rgba(255, 255, 255, 0.03) 0, transparent 0);
+  background-size: 180px 180px;
+  opacity: 0.5;
+}
+
+[data-theme="light"] .mesh {
+  opacity: 0.25;
+}
+
+.orbCyan,
+.orbViolet,
+.orbAmber {
+  position: absolute;
+  z-index: 0;
+  border-radius: 50%;
+  filter: blur(90px);
+  pointer-events: none;
+}
+
+.orbCyan {
+  width: 480px;
+  height: 480px;
+  top: -120px;
+  left: -100px;
+  background: radial-gradient(circle, var(--accent-cyan-glow), transparent 70%);
+  animation: floatA 22s ease-in-out infinite;
+}
+
+.orbViolet {
+  width: 520px;
+  height: 520px;
+  top: 220px;
+  right: -160px;
+  background: radial-gradient(circle, var(--accent-secondary-glow), transparent 70%);
+  animation: floatB 26s ease-in-out infinite;
+}
+
+.orbAmber {
+  width: 360px;
+  height: 360px;
+  bottom: -140px;
+  left: 30%;
+  background: radial-gradient(circle, var(--accent-primary-glow), transparent 70%);
+  animation: floatA 30s ease-in-out infinite reverse;
+}
+
+@keyframes floatA {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(30px, 40px) scale(1.08); }
+}
+
+@keyframes floatB {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(-40px, -25px) scale(1.05); }
+}
+
+/* ==========================================================================
+   Shell / layout
+   ========================================================================== */
+
+.shell {
+  position: relative;
+  z-index: 1;
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: var(--space-12) var(--space-8) 96px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12);
+}
+
+/* ==========================================================================
+   Header / hero
+   ========================================================================== */
+
+.header {
+  position: relative;
+  min-height: 280px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.headerContent {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent-primary);
+}
+
+.greeting {
+  margin: 4px 0 0;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(32px, 5vw, 48px);
+  letter-spacing: -0.025em;
+  color: var(--text-primary);
+}
+
+.wave {
+  display: inline-block;
+  animation: wave 2.4s ease-in-out infinite;
+  transform-origin: 70% 70%;
+}
+
+@keyframes wave {
+  0%, 100% { transform: rotate(0deg); }
+  15% { transform: rotate(16deg); }
+  30% { transform: rotate(-8deg); }
+  45% { transform: rotate(14deg); }
+  60% { transform: rotate(0deg); }
+}
+
+.dateLabel {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+.clock {
+  margin: var(--space-4) 0 0;
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-size: clamp(36px, 6vw, 56px);
+  letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+  text-shadow: 0 0 24px var(--accent-primary-glow);
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-3);
+}
+
+.clockUnit {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  color: var(--text-tertiary);
+}
+
+/* ==========================================================================
+   Top grid — weather + stats
+   ========================================================================== */
+
+.topGrid {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: var(--space-5);
+}
+
+
+.glass {
+  background: var(--surface-glass);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.weatherCard {
+  composes: glass;
+  position: relative;
+  padding: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  overflow: hidden;
+  transition: transform var(--duration-base) var(--ease-out);
+}
+
+.weatherCard::after {
+  content: "";
+  position: absolute;
+  top: -60%;
+  right: -30%;
+  width: 220px;
+  height: 220px;
+  background: radial-gradient(circle, var(--accent-primary-glow), transparent 70%);
+  pointer-events: none;
+}
+
+.weatherCard:hover {
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-glow-blue);
+}
+
+.weatherTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.weatherLocation {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+.weatherIcon {
+  color: var(--accent-warm);
+}
+
+.weatherTemp {
+  font-family: var(--font-display);
+  font-size: 52px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--text-primary);
+}
+
+.weatherDeg {
+  font-size: 22px;
+  font-weight: 500;
+  color: var(--text-tertiary);
+  margin-left: 2px;
+}
+
+.weatherCondition {
+  margin: -8px 0 0;
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+.weatherMetaRow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-top: 4px;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+}
+
+.weatherMetaRow span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.metaSep {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--text-tertiary);
+}
+
+.statsRow {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-3);
+}
+
+.statCard {
+  composes: glass;
+  position: relative;
+  width: 100%;
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  overflow: hidden;
+  text-align: left;
+  cursor: pointer;
+  transition: transform var(--duration-base) var(--ease-out);
+}
+
+.statCard:hover {
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-glow-purple);
+}
+
+.statGlow {
+  position: absolute;
+  inset: -1px;
+  border-radius: var(--radius-lg);
+  padding: 1px;
+  background: linear-gradient(135deg, var(--accent-primary), transparent 40%, transparent 60%, var(--accent-secondary));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity var(--duration-slow) var(--ease-out);
+  pointer-events: none;
+}
+
+.statCard:hover .statGlow {
+  opacity: 0.7;
+}
+
+.statIcon {
+  color: var(--accent-primary);
+  margin-bottom: 4px;
+}
+
+.statValue {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.statLabel {
+  font-size: 12.5px;
+  color: var(--text-secondary);
+}
+
+.statCaption {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.04em;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+}
+
+/* ==========================================================================
+   Sections / eyebrows
+   ========================================================================== */
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.sectionEyebrow {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+/* ==========================================================================
+   Quick actions
+   ========================================================================== */
+
+.actionRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.actionPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: var(--space-3) var(--space-5);
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border-subtle);
+  background: var(--surface-glass);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  cursor: pointer;
+  backdrop-filter: blur(16px);
+  transition: transform var(--duration-base) var(--ease-out), box-shadow var(--duration-base) var(--ease-out);
+}
+
+.actionPill svg {
+  color: var(--accent-primary);
+  transition: transform var(--duration-base) var(--ease-out);
+}
+
+.actionPill:hover {
+  border-color: var(--accent-primary);
+  box-shadow: var(--shadow-glow-blue);
+}
+
+.actionPill:hover svg {
+  transform: scale(1.1);
+}
+
+/* ==========================================================================
+   Main grid — activity / side panels
+   ========================================================================== */
+
+.mainGrid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: var(--space-5);
+  align-items: start;
+}
+
+.sideCol {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.panel {
+  composes: glass;
+  padding: var(--space-6);
+}
+
+.panelTitle {
+  margin: 0 0 var(--space-4);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+.activityList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.activityItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) 0;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.activityItem:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+
+.activityIcon {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface-glass-mid);
+  color: var(--accent-primary);
+  flex-shrink: 0;
+}
+
+.activityText {
+  flex: 1;
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+}
+
+.activityTime {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+  white-space: nowrap;
+}
+
+/* AI status panel */
+
+.aiStatusHead {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+}
+
+.aiPulse {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--accent-primary);
+  animation: pulseDot 2s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+@keyframes pulseDot {
+  0% { box-shadow: 0 0 0 0 var(--accent-primary-glow); }
+  70% { box-shadow: 0 0 0 8px rgba(0, 0, 0, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(0, 0, 0, 0); }
+}
+
+.aiAssistant {
+  font-family: var(--font-display);
+  font-size: var(--text-md);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.aiStatusGrid {
+  margin: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4) var(--space-3);
+}
+
+.aiStatusGrid dt {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+  margin-bottom: 3px;
+}
+
+.aiStatusGrid dd {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.aiStatusOnline {
+  color: var(--accent-primary) !important;
+}
+
+/* Devices */
+
+.deviceList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.deviceItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.deviceItem:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+
+.deviceIcon {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface-glass-mid);
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+.deviceName {
+  flex: 1;
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+}
+
+.deviceStatusOnline,
+.deviceStatusOffline {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.deviceStatusOnline {
+  color: var(--accent-primary);
+}
+
+.deviceStatusOffline {
+  color: var(--text-tertiary);
+}
+
+.statusDot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+/* ==========================================================================
+   Trending chips
+   ========================================================================== */
+
+.chipRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.chip {
+  display: inline-block;
+  padding: 8px var(--space-4);
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border-subtle);
+  background: var(--surface-glass);
+  color: var(--text-secondary);
+  font-size: 12.5px;
+  font-family: var(--font-mono);
+  backdrop-filter: blur(14px);
+  cursor: default;
+  transition: transform var(--duration-base) var(--ease-out), box-shadow var(--duration-base) var(--ease-out);
+}
+
+.chip:hover {
+  border-color: var(--accent-secondary);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-glow-purple);
+}
+
+/* ==========================================================================
+   Responsive
+   ========================================================================== */
+
+/* ==========================================================================
+   Large desktop (>=1280px)
+   Shell stays flex-column to avoid row-height collisions.
+   Internal grids expand horizontally to fill wide viewports:
+     - statsRow: 4 cards in one row instead of 2x2
+     - topGrid: wider weather card
+     - mainGrid: better gap and ratio
+   ========================================================================== */
+
+@media (min-width: 1280px) {
+  .shell {
+    padding: var(--space-12) 64px 96px;
+  }
+
+  .topGrid {
+    grid-template-columns: 380px 1fr;
+    gap: var(--space-6);
+  }
+
+  .statsRow {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .statCard {
+    padding: var(--space-5) var(--space-6);
+    gap: 8px;
+  }
+
+  .statValue {
+    font-size: 28px;
+  }
+
+  .weatherCard {
+    padding: var(--space-8);
+  }
+
+  .header {
+    text-align: left;
+    align-items: flex-start;
+    justify-content: flex-start;
+    min-height: 220px;
+  }
+
+  .headerContent {
+    align-items: flex-start;
+  }
+
+  .actionPill {
+    padding: var(--space-3) var(--space-6);
+    font-size: var(--text-base);
+  }
+
+  .mainGrid {
+    grid-template-columns: 1.5fr 1fr;
+    gap: var(--space-6);
+  }
+
+  .panel {
+    padding: var(--space-8);
+  }
+
+  .activityItem {
+    padding: var(--space-4) 0;
+  }
+}
+
+@media (min-width: 1500px) {
+  .shell {
+    padding-left: 80px;
+    padding-right: 80px;
+  }
+
+  .topGrid {
+    grid-template-columns: 420px 1fr;
+  }
+}
+
+@media (max-width: 920px) {
+  .topGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .mainGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 560px) {
+  .shell {
+    padding: 40px 18px 72px;
+  }
+
+  .statsRow {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .header {
+    min-height: 260px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .orbCyan,
+  .orbViolet,
+  .orbAmber,
+  .wave,
+  .aiPulse {
+    animation: none !important;
+  }
+}

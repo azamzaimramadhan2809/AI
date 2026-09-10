@@ -1,0 +1,1180 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AI Memory Tester</title>
+
+<style>
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #0b141a;
+  color: #e9edef;
+  font-family: Arial, sans-serif;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+}
+
+.app {
+  width: min(900px, 100%);
+  height: 100vh;
+  background: #111b21;
+  display: flex;
+  flex-direction: column;
+}
+
+/* =========================
+   HEADER
+========================= */
+
+.header {
+  background: #202c33;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: #334b58;
+  display: grid;
+  place-items: center;
+  font-size: 21px;
+}
+
+.info {
+  flex: 1;
+}
+
+.title {
+  font-weight: bold;
+}
+
+.status {
+  font-size: 12px;
+  color: #8696a0;
+  margin-top: 3px;
+}
+
+.memory {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+}
+
+/* =========================
+   MEMORY SWITCH
+========================= */
+
+.switch {
+  position: relative;
+  width: 44px;
+  height: 24px;
+}
+
+.switch input {
+  display: none;
+}
+
+.slider {
+  position: absolute;
+  inset: 0;
+  background: #52616a;
+  border-radius: 24px;
+  cursor: pointer;
+}
+
+.slider:before {
+  content: "";
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  left: 3px;
+  top: 3px;
+  background: #fff;
+  border-radius: 50%;
+  transition: .2s;
+}
+
+input:checked + .slider {
+  background: #00a884;
+}
+
+input:checked + .slider:before {
+  transform: translateX(20px);
+}
+
+/* =========================
+   SETTINGS
+========================= */
+
+.settings {
+  padding: 10px 14px;
+  background: #182229;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.settings label {
+  font-size: 11px;
+  color: #8696a0;
+}
+
+.settings input {
+  width: 100%;
+  margin-top: 5px;
+  padding: 9px;
+  border: 1px solid #35454f;
+  border-radius: 7px;
+  background: #111b21;
+  color: #fff;
+}
+
+/* =========================
+   MESSAGES
+========================= */
+
+.messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  background: #0b141a;
+}
+
+.bubble {
+  max-width: 75%;
+  padding: 9px 12px;
+  margin: 7px 0;
+  border-radius: 9px;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  word-break: break-word;
+  min-height: 0;
+}
+
+.user {
+  margin-left: auto;
+  background: #005c4b;
+}
+
+.assistant {
+  margin-right: auto;
+  background: #202c33;
+}
+
+/* =========================
+   BOTTOM
+========================= */
+
+.bottom {
+  background: #202c33;
+  padding: 10px;
+}
+
+.composer {
+  display: flex;
+  gap: 8px;
+}
+
+textarea {
+  flex: 1;
+  resize: none;
+  min-height: 48px;
+  padding: 12px;
+  border: 0;
+  border-radius: 9px;
+  outline: 0;
+  background: #2a3942;
+  color: #fff;
+  font-family: inherit;
+}
+
+button {
+  border: 0;
+  border-radius: 9px;
+  padding: 0 18px;
+  background: #00a884;
+  color: #fff;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+
+.clear-btn {
+  width: 100%;
+  height: 40px;
+  margin-top: 8px;
+  background: #e1d20a;
+}
+
+.hint {
+  text-align: center;
+  color: #8696a0;
+  font-size: 11px;
+  margin-top: 7px;
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media(max-width:650px) {
+
+  .settings {
+    grid-template-columns: 1fr;
+  }
+
+  .bubble {
+    max-width: 88%;
+  }
+
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+  <!-- =========================
+       HEADER
+  ========================== -->
+
+  <div class="header">
+
+    <div class="avatar">
+      🤖
+    </div>
+
+    <div class="info">
+
+      <div class="title">
+        AI Memory Tester
+      </div>
+
+      <div
+        class="status"
+        id="status"
+      >
+        Ready
+      </div>
+
+    </div>
+
+    <div class="memory">
+
+      <span id="memoryLabel">
+        Memory ON
+      </span>
+
+      <label class="switch">
+
+        <input
+          id="memoryToggle"
+          type="checkbox"
+          checked
+        >
+
+        <span class="slider"></span>
+
+      </label>
+
+    </div>
+
+  </div>
+
+
+  <!-- =========================
+       SETTINGS
+  ========================== -->
+
+  <div class="settings">
+
+    <div>
+
+      <label>
+        AI ID
+      </label>
+
+      <input
+        id="aiId"
+        value="cmtti2a2f0002kbfc8qs5py4l"
+      >
+
+    </div>
+
+
+    <div>
+
+      <label>
+        JWT TOKEN
+      </label>
+
+      <input
+        id="token"
+        type="password"
+        value="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjbXR0aTE1NGUwMDAwa2JmYzNocXhqZDY3IiwiaWF0IjoxNzg4OTIyMTA3LCJleHAiOjE3ODk1MjY5MDd9.04mIs0rXvvxmQaVh_CEI2qwyQYnJ56YJbh5ddwjSZq0"
+      >
+
+    </div>
+
+  </div>
+
+
+  <!-- =========================
+       MESSAGES
+  ========================== -->
+
+  <div
+    class="messages"
+    id="messages"
+  ></div>
+
+
+  <!-- =========================
+       BOTTOM
+  ========================== -->
+
+  <div class="bottom">
+
+    <div class="composer">
+
+      <textarea
+        id="message"
+        placeholder="Tulis pesan..."
+      ></textarea>
+
+      <button
+        id="sendBtn"
+      >
+        Kirim
+      </button>
+
+    </div>
+
+
+    <button
+      id="clearBtn"
+      class="clear-btn"
+    >
+      🗑️ Clear Chat
+    </button>
+
+
+    <div class="hint">
+      ON = simpan permanen ke DB •
+      OFF = hanya selama halaman ini belum di-reload
+    </div>
+
+  </div>
+
+</div>
+
+
+<script>
+
+/* =========================================================
+   HELPER
+========================================================= */
+
+const $ = id =>
+  document.getElementById(id);
+
+
+/* =========================================================
+   ELEMENTS
+========================================================= */
+
+const aiId =
+  $("aiId");
+
+const token =
+  $("token");
+
+const toggle =
+  $("memoryToggle");
+
+const label =
+  $("memoryLabel");
+
+const status =
+  $("status");
+
+const messages =
+  $("messages");
+
+const input =
+  $("message");
+
+const send =
+  $("sendBtn");
+
+const clearBtn =
+  $("clearBtn");
+
+
+/* =========================================================
+   TEMPORARY SESSION HISTORY
+========================================================= */
+
+/*
+  Memory OFF:
+
+  History hanya disimpan di browser memory.
+
+  Reload halaman
+  ↓
+  variable ini kembali []
+*/
+
+let sessionHistory = [];
+
+
+/* =========================================================
+   BUBBLE
+========================================================= */
+
+function bubble(
+  role,
+  text
+) {
+
+  const el =
+    document.createElement("div");
+
+  el.className =
+    "bubble " +
+    (
+      role === "user"
+        ? "user"
+        : "assistant"
+    );
+
+  el.textContent =
+    text;
+
+  messages.appendChild(el);
+
+  messages.scrollTop =
+    messages.scrollHeight;
+
+  return el;
+}
+
+
+/* =========================================================
+   UPDATE MEMORY MODE
+========================================================= */
+
+function updateMode() {
+
+  if (toggle.checked) {
+
+    label.textContent =
+      "Memory ON";
+
+    status.textContent =
+      "Memory permanen aktif";
+
+  } else {
+
+    label.textContent =
+      "Memory OFF";
+
+    status.textContent =
+      "Memory session aktif sampai reload";
+
+  }
+
+}
+
+
+toggle.addEventListener(
+  "change",
+  updateMode
+);
+
+
+/* =========================================================
+   LOAD HISTORY FROM DATABASE
+========================================================= */
+
+async function loadHistory() {
+
+  const id =
+    aiId.value.trim();
+
+  const jwt =
+    token.value.trim();
+
+  if (!id || !jwt) {
+
+    return;
+
+  }
+
+
+  /*
+    Kalau Memory OFF,
+    jangan load history permanen.
+
+    Karena konsep kita:
+
+    Memory OFF
+    ↓
+    reload
+    ↓
+    history hilang
+  */
+
+  if (!toggle.checked) {
+
+    messages.innerHTML = "";
+
+    sessionHistory = [];
+
+    status.textContent =
+      "Memory OFF • tidak memuat history";
+
+    return;
+
+  }
+
+
+  try {
+
+    status.textContent =
+      "Memuat history...";
+
+
+    const response =
+      await fetch(
+        `http://localhost:3000/api/chat/history?aiId=${encodeURIComponent(id)}`,
+        {
+          method: "GET",
+
+          headers: {
+            "Authorization":
+              "Bearer " + jwt
+          }
+        }
+      );
+
+
+    if (!response.ok) {
+
+      const errorText =
+        await response.text();
+
+      throw new Error(
+        `HTTP ${response.status} - ${errorText}`
+      );
+
+    }
+
+
+    const result =
+      await response.json();
+
+
+    messages.innerHTML =
+      "";
+
+
+    /*
+      Tampilkan history
+      dari database.
+    */
+
+    for (
+      const message
+      of result.data
+    ) {
+
+      bubble(
+        message.role === "USER"
+          ? "user"
+          : "assistant",
+
+        message.content
+      );
+
+    }
+
+
+    status.textContent =
+      `History dimuat • ${result.data.length} message`;
+
+
+  } catch (error) {
+
+    console.error(
+      "History error:",
+      error
+    );
+
+    status.textContent =
+      "❌ Gagal memuat history";
+
+  }
+
+}
+
+
+/* =========================================================
+   SEND MESSAGE
+========================================================= */
+
+async function sendMessage() {
+
+  const id =
+    aiId.value.trim();
+
+  const jwt =
+    token.value.trim();
+
+  const content =
+    input.value.trim();
+
+
+  if (
+    !id ||
+    !jwt ||
+    !content
+  ) {
+
+    alert(
+      "Isi AI ID, JWT Token, dan pesan."
+    );
+
+    return;
+
+  }
+
+
+  const memory =
+    toggle.checked;
+
+
+  /*
+    Copy history sementara.
+
+    Memory OFF:
+    history ini dikirim ke backend.
+
+    Memory ON:
+    backend mengambil history
+    langsung dari DB.
+  */
+
+  const history =
+    [...sessionHistory];
+
+
+  /* tampilkan pesan user */
+
+  bubble(
+    "user",
+    content
+  );
+
+
+  /* buat bubble kosong untuk streaming */
+
+  const aiBubble =
+    bubble(
+      "assistant",
+      ""
+    );
+
+
+  input.value =
+    "";
+
+  send.disabled =
+    true;
+
+
+  status.textContent =
+    "AI sedang menjawab...";
+
+
+  let fullReply =
+    "";
+
+  let buffer =
+    "";
+
+
+  try {
+
+    const response =
+      await fetch(
+        "http://localhost:3000/api/chat/stream",
+        {
+          method: "POST",
+
+          headers: {
+            "Authorization":
+              "Bearer " + jwt,
+
+            "Content-Type":
+              "application/json"
+          },
+
+          body: JSON.stringify({
+
+            aiId:
+              id,
+
+            content:
+              content,
+
+            memory:
+              memory,
+
+            /*
+              Memory ON:
+              tidak perlu mengirim
+              session history.
+
+              Memory OFF:
+              kirim history sementara.
+            */
+
+            sessionHistory:
+              memory
+                ? []
+                : history
+
+          })
+
+        }
+      );
+
+
+    if (!response.ok) {
+
+      const errorText =
+        await response.text();
+
+      throw new Error(
+        `HTTP ${response.status}${errorText
+          ? " - " + errorText
+          : ""}`
+      );
+
+    }
+
+
+    if (!response.body) {
+
+      throw new Error(
+        "Browser tidak mendukung response streaming."
+      );
+
+    }
+
+
+    const reader =
+      response.body.getReader();
+
+    const decoder =
+      new TextDecoder();
+
+
+    /* =====================================================
+       STREAMING LOOP
+    ===================================================== */
+
+    while (true) {
+
+      const {
+        value,
+        done
+      } =
+        await reader.read();
+
+
+      if (done) {
+
+        break;
+
+      }
+
+
+      buffer +=
+        decoder.decode(
+          value,
+          {
+            stream: true
+          }
+        );
+
+
+      /*
+        SSE event dipisahkan
+        dengan \n\n
+      */
+
+      const events =
+        buffer.split("\n\n");
+
+
+      buffer =
+        events.pop() || "";
+
+
+      for (
+        const event
+        of events
+      ) {
+
+        if (
+          !event.startsWith("data:")
+        ) {
+
+          continue;
+
+        }
+
+
+        const data =
+          event
+            .substring(5)
+            .trim();
+
+
+        if (
+          data === "[DONE]"
+        ) {
+
+          continue;
+
+        }
+
+
+        let chunk;
+
+
+        try {
+
+          chunk =
+            JSON.parse(data);
+
+        } catch {
+
+          chunk =
+            data;
+
+        }
+
+
+        /*
+          Tambahkan chunk
+          ke jawaban AI.
+        */
+
+        fullReply +=
+          chunk;
+
+
+        /*
+          Update bubble
+          setiap ada chunk.
+
+          Inilah efek
+          streaming seperti ChatGPT.
+        */
+
+        aiBubble.textContent =
+          fullReply;
+
+
+        messages.scrollTop =
+          messages.scrollHeight;
+
+      }
+
+    }
+
+
+    /* =====================================================
+       MEMORY OFF
+    ===================================================== */
+
+    if (
+      !memory &&
+      fullReply.trim()
+    ) {
+
+      sessionHistory.push({
+
+        role:
+          "user",
+
+        content:
+          content
+
+      });
+
+
+      sessionHistory.push({
+
+        role:
+          "assistant",
+
+        content:
+          fullReply
+
+      });
+
+    }
+
+
+    /* =====================================================
+       STATUS
+    ===================================================== */
+
+    if (memory) {
+
+      status.textContent =
+        "Selesai • Memory ON";
+
+    } else {
+
+      status.textContent =
+        "Selesai • Memory OFF • session masih aktif";
+
+    }
+
+
+  } catch (error) {
+
+    console.error(
+      "Chat error:",
+      error
+    );
+
+
+    aiBubble.textContent =
+      "❌ Error: " +
+      error.message;
+
+
+    status.textContent =
+      "❌ Error";
+
+
+  } finally {
+
+    send.disabled =
+      false;
+
+    input.focus();
+
+  }
+
+}
+
+
+/* =========================================================
+   CLEAR HISTORY
+========================================================= */
+
+async function clearHistory() {
+
+  const id =
+    aiId.value.trim();
+
+  const jwt =
+    token.value.trim();
+
+
+  if (!id || !jwt) {
+
+    alert(
+      "AI ID atau JWT Token belum diisi."
+    );
+
+    return;
+
+  }
+
+
+  const confirmed =
+    confirm(
+      "Yakin ingin menghapus semua chat?"
+    );
+
+
+  if (!confirmed) {
+
+    return;
+
+  }
+
+
+  try {
+
+    clearBtn.disabled =
+      true;
+
+    status.textContent =
+      "Menghapus history...";
+
+
+    const response =
+      await fetch(
+        `http://localhost:3000/api/chat/history?aiId=${encodeURIComponent(id)}`,
+        {
+          method: "DELETE",
+
+          headers: {
+            "Authorization":
+              "Bearer " + jwt
+          }
+        }
+      );
+
+
+    if (!response.ok) {
+
+      const errorText =
+        await response.text();
+
+      throw new Error(
+        `HTTP ${response.status} - ${errorText}`
+      );
+
+    }
+
+
+    const result =
+      await response.json();
+
+
+    console.log(
+      "DELETE RESULT:",
+      result
+    );
+
+
+    /*
+      Bersihkan tampilan.
+    */
+
+    messages.innerHTML =
+      "";
+
+
+    /*
+      Bersihkan session OFF
+      juga.
+    */
+
+    sessionHistory =
+      [];
+
+
+    status.textContent =
+      "Chat berhasil dihapus";
+
+
+  } catch (error) {
+
+    console.error(
+      "Delete error:",
+      error
+    );
+
+
+    status.textContent =
+      "❌ Gagal menghapus chat";
+
+
+    alert(
+      "Gagal menghapus chat:\n" +
+      error.message
+    );
+
+
+  } finally {
+
+    clearBtn.disabled =
+      false;
+
+  }
+
+}
+
+
+/* =========================================================
+   EVENT LISTENERS
+========================================================= */
+
+send.addEventListener(
+  "click",
+  sendMessage
+);
+
+
+clearBtn.addEventListener(
+  "click",
+  clearHistory
+);
+
+
+input.addEventListener(
+  "keydown",
+  event => {
+
+    if (
+      event.key === "Enter" &&
+      !event.shiftKey
+    ) {
+
+      event.preventDefault();
+
+      sendMessage();
+
+    }
+
+  }
+);
+
+
+/* =========================================================
+   INITIALIZE
+========================================================= */
+
+updateMode();
+
+/*
+  Tunggu sebentar supaya
+  semua element siap.
+*/
+
+window.addEventListener(
+  "load",
+  loadHistory
+);
+
+</script>
+
+</body>
+</html>

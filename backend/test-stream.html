@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>AI Stream Tester</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 20px;
+      background: #111;
+      color: #fff;
+    }
+
+    h1 {
+      margin-bottom: 30px;
+    }
+
+    label {
+      display: block;
+      margin-top: 15px;
+      margin-bottom: 6px;
+    }
+
+    input,
+    textarea,
+    button {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid #444;
+      background: #222;
+      color: #fff;
+    }
+
+    textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+
+    button {
+      margin-top: 20px;
+      cursor: pointer;
+      background: #333;
+    }
+
+    button:hover {
+      background: #444;
+    }
+
+    #status {
+      margin-top: 20px;
+      color: #aaa;
+    }
+
+    #response {
+      margin-top: 20px;
+      padding: 20px;
+      min-height: 150px;
+      border-radius: 8px;
+      background: #1b1b1b;
+      white-space: pre-wrap;
+      line-height: 1.6;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>🤖 AI Stream Tester</h1>
+
+  <label>AI ID</label>
+
+  <input
+    id="aiId"
+    placeholder="Masukkan AI ID kamu!!!"
+  />
+
+  <label>JWT Token</label>
+
+  <input
+    id="token"
+    type="password"
+    placeholder="Paste token login kamu!!!"
+  />
+
+  <label>Pesan</label>
+
+  <textarea id="message" placeholder="Tulis pesan kamu di sini..."></textarea>
+
+  <button onclick="startStream()">
+    🚀 Start Stream
+  </button>
+
+  <div id="status">
+    Status: Ready
+  </div>
+
+  <div id="response"></div>
+
+  <script>
+    async function startStream() {
+
+      const aiId =
+        document.getElementById("aiId").value;
+
+      const token =
+        document.getElementById("token").value;
+
+      const message =
+        document.getElementById("message").value;
+
+      const status =
+        document.getElementById("status");
+
+      const responseBox =
+        document.getElementById("response");
+
+      responseBox.textContent = "";
+
+      status.textContent =
+        "Status: Connecting...";
+
+      try {
+
+        const response = await fetch(
+          "http://localhost:3000/api/chat/stream",
+          {
+            method: "POST",
+
+            headers: {
+              "Authorization": `Bearer ${token}`,
+              "Content-Type": "application/json"
+            },
+
+            body: JSON.stringify({
+              aiId: aiId,
+              content: message
+            })
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(
+            `HTTP Error: ${response.status}`
+          );
+        }
+
+        status.textContent =
+          "Status: 🟢 Streaming...";
+
+        const reader =
+          response.body.getReader();
+
+        const decoder =
+          new TextDecoder();
+
+        let buffer = "";
+
+        while (true) {
+
+          const { value, done } =
+            await reader.read();
+
+          if (done) {
+            break;
+          }
+
+          buffer +=
+            decoder.decode(
+              value,
+              { stream: true }
+            );
+
+          const events =
+            buffer.split("\n\n");
+
+          buffer =
+            events.pop();
+
+          for (const event of events) {
+
+            if (!event.startsWith("data:")) {
+              continue;
+            }
+
+            const data =
+              event.substring(5).trim();
+
+            if (data === "[DONE]") {
+
+              status.textContent =
+                "Status: ✅ Selesai";
+
+              continue;
+            }
+
+            try {
+
+              const chunk =
+                JSON.parse(data);
+
+              responseBox.textContent += chunk;
+
+            } catch {
+
+              responseBox.textContent += data;
+
+            }
+
+          }
+        }
+
+        status.textContent =
+          "Status: ✅ Stream selesai";
+
+      } catch (error) {
+
+        console.error(error);
+
+        status.textContent =
+          "Status: ❌ Error";
+
+        responseBox.textContent =
+          error.message;
+      }
+    }
+  </script>
+
+</body>
+</html>
