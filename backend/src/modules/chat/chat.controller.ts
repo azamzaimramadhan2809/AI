@@ -1,3 +1,4 @@
+import { sendApiError } from "@/core/errors/api-error";
 import { Response } from "express";
 
 import { AuthRequest } from "@/core/middleware/auth.middleware";
@@ -36,17 +37,7 @@ export class ChatController {
       });
 
     } catch (error) {
-
-      console.error(error);
-
-      return res.status(500).json({
-        success: false,
-        message:
-          error instanceof Error
-            ? error.message
-            : "Internal Server Error",
-      });
-
+      return sendApiError(res, error);
     }
   }
 
@@ -55,6 +46,10 @@ export class ChatController {
     res: Response
   ) {
 
+    const cancellation = new AbortController();
+    const onClose = () => { if (!res.writableEnded) cancellation.abort(); };
+    res.on?.('close', onClose);
+    let stream: AsyncGenerator<string> | undefined;
     try {
 
       const userId =
@@ -62,6 +57,11 @@ export class ChatController {
 
       const input =
         createMessageSchema.parse(req.body);
+
+      await this.service.assertAccess(userId, input.aiId);
+      stream = this.service.sendStream(userId, input, cancellation.signal);
+      const first = await stream.next();
+      cancellation.signal.throwIfAborted();
 
       res.setHeader(
         "Content-Type",
@@ -80,14 +80,11 @@ export class ChatController {
 
       res.flushHeaders();
 
-      const stream =
-        this.service.sendStream(
-          userId,
-          input
-        );
+      if (!first.done) res.write(`data: ${JSON.stringify(first.value)}\n\n`);
 
       for await (const chunk of stream) {
 
+        cancellation.signal.throwIfAborted();
         res.write(
           `data: ${JSON.stringify(chunk)}\n\n`
         );
@@ -101,22 +98,10 @@ export class ChatController {
       res.end();
 
     } catch (error) {
-
-      console.error(error);
-
-      if (!res.headersSent) {
-
-        return res.status(500).json({
-          success: false,
-          message:
-            error instanceof Error
-              ? error.message
-              : "Internal Server Error",
-        });
-
-      }
-
-      res.end();
+      if (!cancellation.signal.aborted) return sendApiError(res, error);
+    } finally {
+      res.off?.('close', onClose);
+      await stream?.return(undefined).catch(() => {});
     }
   }
 
@@ -131,10 +116,10 @@ export class ChatController {
         req.user!.userId;
 
       const aiId =
-        req.body.aiId;
+        req.body?.aiId;
 
       const messageId =
-        req.body.messageId;
+        req.body?.messageId;
 
       if (
         typeof aiId !== "string" ||
@@ -173,37 +158,7 @@ export class ChatController {
       });
 
     } catch (error) {
-
-      console.error(error);
-
-      const message =
-        error instanceof Error
-          ? error.message
-          : "Internal Server Error";
-
-      if (message === "Forbidden") {
-
-        return res.status(403).json({
-          success: false,
-          message: "Forbidden",
-        });
-
-      }
-
-      if (message === "Message not found") {
-
-        return res.status(404).json({
-          success: false,
-          message: "Message not found",
-        });
-
-      }
-
-      return res.status(400).json({
-        success: false,
-        message,
-      });
-
+      return sendApiError(res, error);
     }
   }
 
@@ -241,17 +196,7 @@ export class ChatController {
       });
 
     } catch (error) {
-
-      console.error(error);
-
-      return res.status(500).json({
-        success: false,
-        message:
-          error instanceof Error
-            ? error.message
-            : "Internal Server Error",
-      });
-
+      return sendApiError(res, error);
     }
   }
 
@@ -288,17 +233,7 @@ export class ChatController {
       });
   
     } catch (error) {
-  
-      console.error(error);
-  
-      return res.status(500).json({
-        success: false,
-        message:
-          error instanceof Error
-            ? error.message
-            : "Internal Server Error",
-      });
-  
+      return sendApiError(res, error);
     }
   }
 
@@ -340,17 +275,7 @@ export class ChatController {
       });
   
     } catch (error) {
-  
-      console.error(error);
-  
-      return res.status(500).json({
-        success: false,
-        message:
-          error instanceof Error
-            ? error.message
-            : "Internal Server Error",
-      });
-  
+      return sendApiError(res, error);
     }
   }
 }

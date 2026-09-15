@@ -1,3 +1,5 @@
+import { loginSchema, registerSchema } from "./auth.validation";
+import { sendApiError } from "@/core/errors/api-error";
 import { Request, Response } from "express";
 
 import { AuthService } from "./auth.service";
@@ -10,7 +12,7 @@ export class AuthController {
 
   async register(req: Request, res: Response) {
     try {
-      const user = await this.authService.register(req.body);
+      const user = await this.authService.register(registerSchema.parse(req.body));
 
       return res.status(201).json({
         success: true,
@@ -18,19 +20,13 @@ export class AuthController {
         data: user,
       });
     } catch (error) {
-      return res.status(400).json({
-        success: false,
-        message:
-          error instanceof Error
-            ? error.message
-            : "Unknown error",
-      });
+      return sendApiError(res, error);
     }
   }
 
   async login(req: Request, res: Response) {
     try {
-      const result = await this.authService.login(req.body);
+      const result = await this.authService.login(loginSchema.parse(req.body));
 
       return res.status(200).json({
         success: true,
@@ -38,13 +34,7 @@ export class AuthController {
         data: result,
       });
     } catch (error) {
-      return res.status(401).json({
-        success: false,
-        message:
-          error instanceof Error
-            ? error.message
-            : "Unknown error",
-      });
+      return sendApiError(res, error);
     }
   }
 
@@ -59,13 +49,7 @@ export class AuthController {
         data: user,
       });
     } catch (error) {
-      return res.status(404).json({
-        success: false,
-        message:
-          error instanceof Error
-            ? error.message
-            : "Unknown error",
-      });
+      return sendApiError(res, error);
     }
   }
 }

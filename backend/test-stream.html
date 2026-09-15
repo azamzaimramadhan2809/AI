@@ -146,8 +146,9 @@
         );
 
         if (!response.ok) {
+          const error = await response.json().catch(() => null);
           throw new Error(
-            `HTTP Error: ${response.status}`
+            error?.message ?? `HTTP Error: ${response.status}`
           );
         }
 
@@ -184,6 +185,11 @@
             events.pop();
 
           for (const event of events) {
+
+            if (event.startsWith("event: error")) {
+              const line = event.split("\n").find(line => line.startsWith("data:"));
+              throw new Error(line ? JSON.parse(line.slice(5)).message : "Streaming gagal");
+            }
 
             if (!event.startsWith("data:")) {
               continue;

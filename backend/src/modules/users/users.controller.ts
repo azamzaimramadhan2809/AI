@@ -1,3 +1,5 @@
+import { profileSchema, passwordSchema } from "../auth/auth.validation";
+import { sendApiError } from "@/core/errors/api-error";
 import { Response } from "express";
 import { UsersService } from "./users.service";
 import { AuthRequest } from "@/core/middleware/auth.middleware";
@@ -28,13 +30,7 @@ export class UsersController {
         data: user,
       });
     } catch (error) {
-      return res.status(400).json({
-        success: false,
-        message:
-          error instanceof Error
-            ? error.message
-            : "Unknown error",
-      });
+      return sendApiError(res, error);
     }
   }
 
@@ -47,7 +43,7 @@ export class UsersController {
 
       const user = await this.usersService.updateProfile(
         userId,
-        req.body
+        profileSchema.parse(req.body)
       );
 
       return res.json({
@@ -56,13 +52,7 @@ export class UsersController {
         data: user,
       });
     } catch (error) {
-      return res.status(400).json({
-        success: false,
-        message:
-          error instanceof Error
-            ? error.message
-            : "Unknown error",
-      });
+      return sendApiError(res, error);
     }
   }
   
@@ -77,55 +67,7 @@ export class UsersController {
         oldPassword,
         newPassword,
         confirmPassword,
-      } = req.body;
-  
-      // ===============================
-      // VALIDASI
-      // ===============================
-  
-      // Semua field wajib diisi
-      if (!oldPassword || !newPassword || !confirmPassword) {
-        return res.status(400).json({
-          success: false,
-          message: "All password fields are required",
-        });
-      }
-  
-      // Password minimal 8 karakter
-      if (newPassword.length < 8) {
-        return res.status(400).json({
-          success: false,
-          message: "New password must be at least 8 characters",
-        });
-      }
-  
-      // Password maksimal 64 karakter
-      if (newPassword.length > 64) {
-        return res.status(400).json({
-          success: false,
-          message: "New password must not exceed 64 characters",
-        });
-      }
-  
-      // Password baru tidak boleh sama
-      if (oldPassword === newPassword) {
-        return res.status(400).json({
-          success: false,
-          message: "New password must be different from old password",
-        });
-      }
-  
-      // Confirm password harus sama
-      if (newPassword !== confirmPassword) {
-        return res.status(400).json({
-          success: false,
-          message: "Confirm password does not match",
-        });
-      }
-  
-      // ===============================
-      // UPDATE PASSWORD
-      // ===============================
+      } = passwordSchema.parse(req.body);
   
       await this.usersService.changePassword(
         userId,
@@ -139,15 +81,7 @@ export class UsersController {
       });
   
     } catch (error) {
-  
-      return res.status(400).json({
-        success: false,
-        message:
-          error instanceof Error
-            ? error.message
-            : "Unknown error",
-      });
-  
+      return sendApiError(res, error);
     }
   }
   async deleteAccount(
@@ -164,13 +98,7 @@ export class UsersController {
         message: "Account deleted successfully",
       });
     } catch (error) {
-      return res.status(400).json({
-        success: false,
-        message:
-          error instanceof Error
-            ? error.message
-            : "Unknown error",
-      });
+      return sendApiError(res, error);
     }
   }
 }

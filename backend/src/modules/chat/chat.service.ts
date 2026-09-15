@@ -22,6 +22,10 @@ export class ChatService {
     private readonly memoryManager = new MemoryManager()
   ) {}
 
+  async assertAccess(userId: string, aiId: string): Promise<void> {
+    await this.aiService.getMyAI(userId, aiId);
+  }
+
   private async buildHistory(
     aiId: string,
     memory: boolean,
@@ -165,9 +169,11 @@ export class ChatService {
 
 async *sendStream(
   userId: string,
-  input: CreateMessageInput
+  input: CreateMessageInput,
+  signal?: AbortSignal
 ): AsyncGenerator<string> {
 
+  signal?.throwIfAborted();
   // 1. Pastikan AI milik user
   const ai =
     await this.aiService.getMyAI(
@@ -199,6 +205,7 @@ async *sendStream(
         )
       : [];
 
+  signal?.throwIfAborted();
   // 5. Simpan pesan USER
   // hanya kalau Memory ON
   if (memory) {
@@ -218,6 +225,7 @@ async *sendStream(
   const stream =
     this.aiChatService.stream({
       ai,
+      signal,
       message: input.content,
       history: providerHistory,
 
@@ -238,6 +246,7 @@ async *sendStream(
       JSON.stringify(chunk)
     );
 
+    signal?.throwIfAborted();
     fullReply += chunk;
 
     // Kirim chunk langsung ke client
@@ -250,6 +259,7 @@ async *sendStream(
     JSON.stringify(fullReply)
   );
 
+  signal?.throwIfAborted();
   // 9. Simpan balasan AI
   // hanya kalau Memory ON
   // dan response tidak kosong

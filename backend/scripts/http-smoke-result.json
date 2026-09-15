@@ -1,0 +1,15 @@
+{
+  "timestamp": "2026-09-12T01:43:47.977Z",
+  "passed": true,
+  "checks": [
+    "database connection",
+    "HTTP health and unauthenticated access rejection",
+    "registration, wrong password rejection, login, JWT /me",
+    "send: memory ON, real calculator response, exact reply persisted, memory extracted",
+    "stream: memory ON, real calculator response, exact reply persisted, memory extracted",
+    "long-term memory recalled after deleting test chat history",
+    "send: memory OFF override uses sessionHistory and writes no messages or memories",
+    "stream: memory OFF override uses sessionHistory and writes no messages or memories"
+  ],
+  "cleanup": true
+}

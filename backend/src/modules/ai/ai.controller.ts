@@ -1,3 +1,5 @@
+import { z } from "zod";
+import { sendApiError } from "@/core/errors/api-error";
 import { Request, Response } from "express";
 
 import { AIService } from "./ai.service";
@@ -31,13 +33,7 @@ export class AIController {
         data: ai,
       });
     } catch (error) {
-      return res.status(400).json({
-        success: false,
-        message:
-          error instanceof Error
-            ? error.message
-            : "Unknown error",
-      });
+      return sendApiError(res, error);
     }
   }
 
@@ -59,13 +55,7 @@ export class AIController {
         data: ais,
       });
     } catch (error) {
-      return res.status(400).json({
-        success: false,
-        message:
-          error instanceof Error
-            ? error.message
-            : "Unknown error",
-      });
+      return sendApiError(res, error);
     }
   }
 
@@ -73,20 +63,14 @@ export class AIController {
     try {
       const id = String(req.params.id);
 
-      const ai = await this.service.getAIById(id);
+      const ai = await this.service.getMyAI(req.user!.userId, id);
 
       return res.json({
         success: true,
         data: ai,
       });
     } catch (error) {
-      return res.status(404).json({
-        success: false,
-        message:
-          error instanceof Error
-            ? error.message
-            : "Unknown error",
-      });
+      return sendApiError(res, error);
     }
   }
 
@@ -121,36 +105,7 @@ export class AIController {
       });
   
     } catch (error) {
-  
-      console.error(error);
-  
-      const message =
-        error instanceof Error
-          ? error.message
-          : "Internal Server Error";
-  
-      if (message === "Forbidden") {
-  
-        return res.status(403).json({
-          success: false,
-          message: "Forbidden",
-        });
-  
-      }
-  
-      if (message === "AI not found") {
-  
-        return res.status(404).json({
-          success: false,
-          message: "AI not found",
-        });
-  
-      }
-  
-      return res.status(400).json({
-        success: false,
-        message,
-      });
+      return sendApiError(res, error);
     }
   }
 
@@ -170,22 +125,16 @@ export class AIController {
       });
   
     } catch (error) {
-      return res.status(400).json({
-        success: false,
-        message:
-          error instanceof Error
-            ? error.message
-            : "Unknown error",
-      });
+      return sendApiError(res, error);
     }
   }
 
   /**
    * Test Gemini AI
    */
-  async test(req: Request, res: Response) {
+  async test(req: AuthRequest, res: Response) {
     try {
-      const { message } = req.body;
+      const { aiId, message } = z.object({ aiId: z.string().trim().min(1), message: z.string().trim().min(1) }).parse(req.body);
 
       if (!message) {
         return res.status(400).json({
@@ -194,22 +143,14 @@ export class AIController {
         });
       }
 
-      const reply = await this.chatService.chat(message);
+      const reply = await this.chatService.chat({ ai: await this.service.getMyAI(req.user!.userId, aiId), message });
 
       return res.status(200).json({
         success: true,
         reply,
       });
     } catch (error) {
-      console.error(error);
-
-      return res.status(500).json({
-        success: false,
-        message:
-          error instanceof Error
-            ? error.message
-            : "Internal Server Error",
-      });
+      return sendApiError(res, error);
     }
   }
 }

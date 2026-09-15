@@ -54,7 +54,20 @@ export class MemoryManager {
       lower.startsWith("mengapa ") ||
       lower.startsWith("bagaimana ") ||
       lower.startsWith("menurutmu ") ||
-      lower.startsWith("apakah ")
+      lower.startsWith("apakah ") ||
+      lower.startsWith("what ") ||
+      lower.startsWith("who ") ||
+      lower.startsWith("when ") ||
+      lower.startsWith("where ") ||
+      lower.startsWith("why ") ||
+      lower.startsWith("how ") ||
+      lower.startsWith("do ") ||
+      lower.startsWith("does ") ||
+      lower.startsWith("is ") ||
+      lower.startsWith("are ") ||
+      lower.startsWith("can ") ||
+      lower.startsWith("could ") ||
+      lower.startsWith("would ")
     ) {
       return null;
     }
@@ -68,7 +81,11 @@ export class MemoryManager {
       lower.includes("nama aku ") ||
       lower.includes("namaku ") ||
       lower.includes("saya adalah ") ||
-      lower.includes("aku adalah ")
+      lower.includes("aku adalah ") ||
+      lower.includes("my name is ") ||
+      lower.includes("call me ") ||
+      lower.includes("i'm called ") ||
+      lower.includes("i am called ")
     ) {
       return text;
     }
@@ -83,7 +100,13 @@ export class MemoryManager {
       lower.includes("saya tidak suka ") ||
       lower.includes("aku tidak suka ") ||
       lower.includes("saya nggak suka ") ||
-      lower.includes("aku nggak suka ")
+      lower.includes("aku nggak suka ") ||
+      lower.includes("i like ") ||
+      lower.includes("i love ") ||
+      lower.includes("i prefer ") ||
+      lower.includes("i don't like ") ||
+      lower.includes("i do not like ") ||
+      lower.includes("i dislike ")
     ) {
       return text;
     }
@@ -98,7 +121,11 @@ export class MemoryManager {
       lower.includes("saya mau ") ||
       lower.includes("aku mau ") ||
       lower.includes("target saya ") ||
-      lower.includes("targetku ")
+      lower.includes("targetku ") ||
+      lower.includes("i want ") ||
+      lower.includes("i would like ") ||
+      lower.includes("my goal is ") ||
+      lower.includes("my target is ")
     ) {
       return text;
     }
@@ -111,7 +138,10 @@ export class MemoryManager {
       lower.includes("project saya ") ||
       lower.includes("projectku ") ||
       lower.includes("proyek saya ") ||
-      lower.includes("proyekku ")
+      lower.includes("proyekku ") ||
+      lower.includes("my project ") ||
+      lower.includes("i'm working on ") ||
+      lower.includes("i am working on ")
     ) {
       return text;
     }

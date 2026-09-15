@@ -17,6 +17,6 @@ export interface AIProvider {
    */
   stream(
     input: ChatProviderInput
-  ): AsyncGenerator<string>;
+  ): AsyncGenerator<string, ChatProviderOutput | void>;
 
 }

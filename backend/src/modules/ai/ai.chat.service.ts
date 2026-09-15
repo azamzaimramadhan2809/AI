@@ -1,163 +1,92 @@
+import { ApiError, providerError } from "@/core/errors/api-error";
 import { AI } from "@prisma/client";
-
 import { PromptBuilder } from "./builders/prompt.builder";
 import { ProviderFactory } from "./providers/provider.factory";
-import { ProviderMessage } from "./providers/provider.types";
-
+import { AIProvider } from "./providers/provider.interface";
+import { ChatProviderInput, ChatProviderOutput, ProviderMessage } from "./providers/provider.types";
 import { ToolExecutor } from "../tools/tool.executor";
-import {
-  toolRegistry,
-  getToolDefinitions,
-} from "../tools/tools.module";
+import { toolRegistry, getToolDefinitions } from "../tools/tools.module";
+
+interface ChatData {
+  signal?: AbortSignal;
+  ai: AI;
+  message: string;
+  history?: ProviderMessage[];
+  memories?: string[];
+}
 
 export class AIChatService {
+  constructor(
+    private readonly provider: AIProvider = ProviderFactory.create(),
+    private readonly toolExecutor = new ToolExecutor(toolRegistry),
+  ) {}
 
-  private provider = ProviderFactory.create();
-
-  private toolExecutor =
-    new ToolExecutor(toolRegistry);
-
-  async chat(data: {
-    ai: AI;
-    message: string;
-    history?: ProviderMessage[];
-    memories?: string[];
-  }): Promise<string> {
-
-    const systemPrompt =
-      PromptBuilder.build(data.ai);
-
-    const memoryContext =
-      data.memories?.length
-        ? `
-
-Relevant Memories:
-${data.memories
-  .map((memory) => `- ${memory}`)
-  .join("\n")}
-`
-        : "";
-
-    const tools =
-      getToolDefinitions();
-
-      console.log(
-        "🧰 AVAILABLE TOOLS:",
-        tools.map((tool) => tool.name)
-      );
-
-    let result =
-      await this.provider.chat({
-        message: data.message,
-
-        systemPrompt:
-          systemPrompt + memoryContext,
-
-        history: data.history,
-
-        tools,
-      });
-
-    /*
-     * Tool calling loop
-     *
-     * Gemini bisa meminta beberapa tool
-     * dalam satu response.
-     */
-    for (let i = 0; i < 3; i++) {
-
-      if (!result.toolCalls?.length) {
-        return result.text;
-      }
-
-      const toolResults =
-        await Promise.all(
-          result.toolCalls.map(
-            async (toolCall) => {
-
-              const output =
-                await this.toolExecutor.execute(
-                  {
-                    name: toolCall.name,
-
-                    arguments:
-                      toolCall.arguments,
-                  },
-                  {
-                    userId: data.ai.userId,
-                    aiId: data.ai.id,
-                  }
-                );
-
-              return {
-                id: toolCall.id,
-
-                name: toolCall.name,
-
-                result:
-                  output.result,
-              };
-            }
-          )
-        );
-
-      result =
-        await this.provider.chat({
-          message: "",
-
-          systemPrompt:
-            systemPrompt + memoryContext,
-
-          history: data.history,
-
-          tools,
-
-          toolResults,
-
-          toolCallContext:
-            result.toolCallContext,
-        });
-    }
-
-    return (
-      result.text ||
-      "Maaf, saya tidak dapat menyelesaikan permintaan tersebut."
-    );
+  private input(data: ChatData): ChatProviderInput {
+    const memories = data.memories?.length
+      ? "\n\nRelevant Memories:\n" + data.memories.map(memory => "- " + memory).join("\n")
+      : "";
+    return {
+      message: data.message,
+      signal: data.signal,
+      systemPrompt: PromptBuilder.build(data.ai) + memories,
+      history: data.history,
+      tools: getToolDefinitions(),
+    };
   }
 
-  async *stream(data: {
-    ai: AI;
-    message: string;
-    history?: ProviderMessage[];
-    memories?: string[];
-  }): AsyncGenerator<string> {
+  private async continueWithTools(input: ChatProviderInput, result: ChatProviderOutput, data: ChatData) {
+    const toolResults = await Promise.all(result.toolCalls!.map(async call => {
+      data.signal?.throwIfAborted();
+      const output = await this.toolExecutor.execute(
+        { name: call.name, arguments: call.arguments },
+        { userId: data.ai.userId, aiId: data.ai.id },
+      );
+      return { id: call.id, name: call.name, result: output.result };
+    }));
+    return { ...input, toolResults, toolCallContext: result.toolCallContext };
+  }
 
-    const systemPrompt =
-      PromptBuilder.build(data.ai);
+  async chat(data: ChatData): Promise<string> {
+    let input = this.input(data);
+    for (let round = 0; round <= 3; round++) {
+      const result = await this.provider.chat(input).catch(error => { data.signal?.throwIfAborted(); throw providerError(error); });
+      if (!result.toolCalls?.length) {
+        if (!result.text.trim()) throw new ApiError(502, "AI returned an empty response");
+        return result.text;
+      }
+      if (round === 3) throw new ApiError(502, "AI tool call limit exceeded");
+      input = await this.continueWithTools(input, result, data);
+    }
+    throw new ApiError(502, "AI tool call limit exceeded");
+  }
 
-    const memoryContext =
-      data.memories?.length
-        ? `
-
-Relevant Memories:
-${data.memories
-  .map((memory) => `- ${memory}`)
-  .join("\n")}
-`
-        : "";
-
-    const stream =
-      this.provider.stream({
-        message: data.message,
-
-        systemPrompt:
-          systemPrompt + memoryContext,
-
-        history: data.history,
-      });
-
-    for await (const chunk of stream) {
-      yield chunk;
+  async *stream(data: ChatData): AsyncGenerator<string> {
+    let input = this.input(data);
+    for (let round = 0; round <= 3; round++) {
+      data.signal?.throwIfAborted();
+      const stream = this.provider.stream(input);
+      let result: ChatProviderOutput | void;
+      let text = "";
+      try {
+        while (true) {
+          const next = await stream.next().catch(error => { data.signal?.throwIfAborted(); throw providerError(error); });
+          if (next.done) {
+            result = next.value;
+            break;
+          }
+          data.signal?.throwIfAborted();
+          text += next.value;
+          yield next.value;
+        }
+      } finally {
+        await stream.return(undefined);
+      }
+      if (!result?.toolCalls?.length) {
+        if (!text.trim()) throw new ApiError(502, "AI returned an empty response");
+        return;
+      }
+      if (round === 3) throw new ApiError(502, "AI tool call limit exceeded");
+      input = await this.continueWithTools(input, result, data);
     }
   }
 }

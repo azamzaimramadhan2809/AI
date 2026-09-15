@@ -1,0 +1,109 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum MessageRole {
+  USER
+  ASSISTANT
+  SYSTEM
+}
+
+enum MessageType {
+  TEXT
+  IMAGE
+  FILE
+  VOICE
+  VOICE_CALL
+  VIDEO_CALL
+  SYSTEM
+}
+
+model User {
+  id           String   @id @default(cuid())
+
+  username     String   @unique
+  email        String   @unique
+  password     String
+
+  displayName  String?
+
+  avatar       String?
+  bio          String?
+
+  role         String   @default("user")
+
+  isVerified   Boolean  @default(false)
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  ais          AI[]
+}
+
+model AI {
+  id              String   @id @default(cuid())
+
+  userId          String
+  user            User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Basic
+  name            String
+  description     String?
+  avatar          String?
+  category        String?
+
+  // AI Configuration
+  prompt          String?
+  personality     String?
+  model           String   @default("default")
+
+  // AI Settings
+  memory          Boolean  @default(true)
+  assistantType   String   @default("normal")
+
+  // UI
+  isPinned        Boolean  @default(false)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  messages        Message[]
+
+  memories Memory[]
+}
+
+model Message {
+  id          String   @id @default(cuid())
+
+  aiId        String
+  ai          AI @relation(fields: [aiId], references: [id], onDelete: Cascade)
+
+  role        MessageRole
+
+  type        MessageType @default(TEXT)
+
+  content     String @db.LongText
+
+  metadata    Json?
+
+  editedAt    DateTime?
+
+  createdAt   DateTime @default(now())
+}
+
+model Memory {
+  id        String   @id @default(cuid())
+
+  aiId      String
+  ai        AI @relation(fields: [aiId], references: [id], onDelete: Cascade)
+
+  content   String   @db.LongText
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

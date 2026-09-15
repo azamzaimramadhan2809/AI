@@ -31,7 +31,9 @@ export class UsersService {
       await bcrypt.hash(data.password, 10);
 
     return this.repository.create({
-      ...data,
+      username: data.username,
+      email: data.email,
+      displayName: data.displayName,
       password: hashedPassword,
     });
   }
@@ -88,10 +90,12 @@ export class UsersService {
       }
     }
 
-    return this.repository.updateById(
-      userId,
-      data
-    );
+    return this.repository.updateById(userId, {
+      username: data.username,
+      displayName: data.displayName,
+      bio: data.bio,
+      avatar: data.avatar,
+    });
   }
 
   async changePassword(

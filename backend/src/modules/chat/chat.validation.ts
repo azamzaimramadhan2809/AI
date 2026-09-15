@@ -2,14 +2,14 @@ import { z } from "zod";
 
 export const sessionHistorySchema = z.object({
   role: z.enum(["user", "assistant"]),
-  content: z.string().min(1),
+  content: z.string().trim().min(1),
 });
 
 export const createMessageSchema = z.object({
-  aiId: z.string().min(1),
+  aiId: z.string().trim().min(1),
 
   content: z
-    .string()
+    .string().trim()
     .min(1, "Message cannot be empty"),
 
   memory: z.boolean().optional(),

@@ -51,6 +51,7 @@ export class GrokProvider implements AIProvider {
       this.apiUrl,
       {
         method: "POST",
+        signal: input.signal,
 
         headers: {
           "Content-Type": "application/json",
@@ -115,6 +116,7 @@ export class GrokProvider implements AIProvider {
       this.apiUrl,
       {
         method: "POST",
+        signal: input.signal,
 
         headers: {
           "Content-Type": "application/json",

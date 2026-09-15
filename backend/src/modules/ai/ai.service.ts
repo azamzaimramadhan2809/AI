@@ -1,6 +1,6 @@
 import { AIRepository } from "./ai.repository";
 import { UsersService } from "../users/users.service";
-import { UpdateAIInput } from "./ai.validation";
+import { UpdateAIInput, createAISchema, updateAISchema } from "./ai.validation";
 
 export class AIService {
 
@@ -26,6 +26,8 @@ export class AIService {
       assistantType?: string;
     }
   ) {
+
+    data = createAISchema.parse(data);
 
     const user =
       await this.usersService.findById(userId);
@@ -126,7 +128,7 @@ export class AIService {
 
     return this.repository.update(
       id,
-      data
+      updateAISchema.parse(data)
     );
   }
 

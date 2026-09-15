@@ -52,3 +52,7 @@ export const updateAISchema = z.object({
 
 export type UpdateAIInput =
   z.infer<typeof updateAISchema>;
+
+export const createAISchema = updateAISchema.omit({ isPinned: true }).extend({
+  name: z.string().trim().min(1).max(100),
+});

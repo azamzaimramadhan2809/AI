@@ -1,3 +1,4 @@
+import { sendApiError } from "@/core/errors/api-error";
 import { Response } from "express";
 
 import { AuthRequest } from "@/core/middleware/auth.middleware";
@@ -39,17 +40,7 @@ export class ImageController {
       });
 
     } catch (error) {
-
-      console.error(error);
-
-      return res.status(400).json({
-        success: false,
-        message:
-          error instanceof Error
-            ? error.message
-            : "Unknown error",
-      });
-
+      return sendApiError(res, error);
     }
   }
 }

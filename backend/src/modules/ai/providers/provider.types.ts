@@ -18,6 +18,7 @@ export interface ProviderToolResult {
 }
 
 export interface ChatProviderInput {
+  signal?: AbortSignal;
   systemPrompt: string;
   message: string;
   history?: ProviderMessage[];

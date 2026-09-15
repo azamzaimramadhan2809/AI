@@ -1,0 +1,14 @@
+{
+  "timestamp": "2026-09-12T01:56:53.931Z",
+  "passed": true,
+  "checks": [
+    "two test users registered; client-supplied role and verification ignored",
+    "11 cross-account AI/chat/regenerate requests rejected; no data changes or provider calls",
+    "owner read/send/stream works; history and memory context stays scoped to owner",
+    "11 cross-account AI/chat/regenerate requests rejected; no data changes or provider calls",
+    "owner read/send/stream works; history and memory context stays scoped to owner",
+    "creation/update/profile cannot override owner or mutate nested relations; owner deletion works"
+  ],
+  "cleanup": true,
+  "provider": "mock; real HTTP, JWT, MySQL"
+}
