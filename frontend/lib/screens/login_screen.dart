@@ -55,16 +55,15 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
           backgroundColor: AppColors.accentGreenDark,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
         ),
       );
 
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
-          builder: (_) => HomeScreen(
-            user: result.user!,
-            token: result.token,
-          ),
+          builder: (_) => HomeScreen(user: result.user!, token: result.token),
         ),
       );
     } else {
@@ -79,7 +78,9 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
           backgroundColor: AppColors.error,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
         ),
       );
     }
@@ -92,7 +93,10 @@ class _LoginScreenState extends State<LoginScreen> {
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 24.0,
+              vertical: 16.0,
+            ),
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 420),
               child: Column(
@@ -178,29 +182,48 @@ class _LoginScreenState extends State<LoginScreen> {
                             textInputAction: TextInputAction.next,
                             decoration: InputDecoration(
                               hintText: 'nama@email.com',
-                              hintStyle: const TextStyle(color: AppColors.textMuted, fontSize: 14),
-                              prefixIcon: const Icon(Icons.email_outlined, color: AppColors.primaryBlue, size: 20),
+                              hintStyle: const TextStyle(
+                                color: AppColors.textMuted,
+                                fontSize: 14,
+                              ),
+                              prefixIcon: const Icon(
+                                Icons.email_outlined,
+                                color: AppColors.primaryBlue,
+                                size: 20,
+                              ),
                               filled: true,
                               fillColor: AppColors.background,
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 14,
+                              ),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide: const BorderSide(color: AppColors.border),
+                                borderSide: const BorderSide(
+                                  color: AppColors.border,
+                                ),
                               ),
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide: const BorderSide(color: AppColors.border),
+                                borderSide: const BorderSide(
+                                  color: AppColors.border,
+                                ),
                               ),
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide: const BorderSide(color: AppColors.accentGreenDark, width: 1.8),
+                                borderSide: const BorderSide(
+                                  color: AppColors.accentGreenDark,
+                                  width: 1.8,
+                                ),
                               ),
                             ),
                             validator: (value) {
                               if (value == null || value.trim().isEmpty) {
                                 return 'Email tidak boleh kosong';
                               }
-                              final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+                              final emailRegex = RegExp(
+                                r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                              );
                               if (!emailRegex.hasMatch(value.trim())) {
                                 return 'Format email tidak valid';
                               }
@@ -226,32 +249,53 @@ class _LoginScreenState extends State<LoginScreen> {
                             onFieldSubmitted: (_) => _handleLogin(),
                             decoration: InputDecoration(
                               hintText: 'Masukkan kata sandi',
-                              hintStyle: const TextStyle(color: AppColors.textMuted, fontSize: 14),
-                              prefixIcon: const Icon(Icons.lock_outline, color: AppColors.primaryBlue, size: 20),
+                              hintStyle: const TextStyle(
+                                color: AppColors.textMuted,
+                                fontSize: 14,
+                              ),
+                              prefixIcon: const Icon(
+                                Icons.lock_outline,
+                                color: AppColors.primaryBlue,
+                                size: 20,
+                              ),
                               suffixIcon: IconButton(
                                 icon: Icon(
-                                  _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                                  _obscurePassword
+                                      ? Icons.visibility_off_outlined
+                                      : Icons.visibility_outlined,
                                   color: AppColors.textSecondary,
                                   size: 20,
                                 ),
                                 onPressed: () {
-                                  setState(() => _obscurePassword = !_obscurePassword);
+                                  setState(
+                                    () => _obscurePassword = !_obscurePassword,
+                                  );
                                 },
                               ),
                               filled: true,
                               fillColor: AppColors.background,
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 14,
+                              ),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide: const BorderSide(color: AppColors.border),
+                                borderSide: const BorderSide(
+                                  color: AppColors.border,
+                                ),
                               ),
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide: const BorderSide(color: AppColors.border),
+                                borderSide: const BorderSide(
+                                  color: AppColors.border,
+                                ),
                               ),
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide: const BorderSide(color: AppColors.accentGreenDark, width: 1.8),
+                                borderSide: const BorderSide(
+                                  color: AppColors.accentGreenDark,
+                                  width: 1.8,
+                                ),
                               ),
                             ),
                             validator: (value) {
@@ -271,7 +315,9 @@ class _LoginScreenState extends State<LoginScreen> {
                               borderRadius: BorderRadius.circular(12),
                               boxShadow: [
                                 BoxShadow(
-                                  color: AppColors.accentGreen.withValues(alpha: 0.35),
+                                  color: AppColors.accentGreen.withValues(
+                                    alpha: 0.35,
+                                  ),
                                   blurRadius: 12,
                                   offset: const Offset(0, 4),
                                 ),
@@ -296,7 +342,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                       ),
                                     )
                                   : const Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
                                       children: [
                                         Text(
                                           'Masuk',
@@ -307,7 +354,11 @@ class _LoginScreenState extends State<LoginScreen> {
                                           ),
                                         ),
                                         SizedBox(width: 8),
-                                        Icon(Icons.arrow_forward, color: Colors.white, size: 18),
+                                        Icon(
+                                          Icons.arrow_forward,
+                                          color: Colors.white,
+                                          size: 18,
+                                        ),
                                       ],
                                     ),
                             ),
@@ -333,7 +384,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       GestureDetector(
                         onTap: () {
                           Navigator.of(context).push(
-                            MaterialPageRoute(builder: (_) => const RegisterScreen()),
+                            MaterialPageRoute(
+                              builder: (_) => const RegisterScreen(),
+                            ),
                           );
                         },
                         child: const Text(

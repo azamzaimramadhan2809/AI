@@ -1,275 +1,515 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
-import '../core/constants/colors.dart';
+import '../models/ai_model.dart';
 import '../models/auth_model.dart';
+import '../services/nexa_service.dart';
+import '../widgets/app_avatar.dart';
+import '../widgets/workspace_ui.dart';
+import '../widgets/profile_panel.dart';
+import 'ai_studio_page.dart';
 import 'auth_screen.dart';
+import 'chat_page.dart';
+import 'dashboard_page.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   final UserModel user;
   final String? token;
+  final NexaService? service;
+  const HomeScreen({super.key, required this.user, this.token, this.service});
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
 
-  const HomeScreen({
-    super.key,
-    required this.user,
-    this.token,
+class _HomeScreenState extends State<HomeScreen> {
+  late UserModel _user;
+  late final NexaService _service;
+  final List<AIModel> _assistants = [];
+  int _index = 0;
+  bool _expanded = true, _dark = false, _loading = true;
+  String? _error, _chatAI;
+  static const _labels = ['Dashboard', 'AI Studio', 'Messages', 'Insights'];
+  static const _icons = [
+    Icons.grid_view_rounded,
+    Icons.auto_awesome_rounded,
+    Icons.forum_outlined,
+    Icons.insights_rounded,
+  ];
+  @override
+  void initState() {
+    super.initState();
+    _user = widget.user;
+    _service = widget.service ?? NexaService(token: widget.token ?? '');
+    _load();
+  }
+
+  Future<void> _load() async {
+    if ((widget.token ?? '').isEmpty && widget.service == null) {
+      setState(() => _loading = false);
+      return;
+    }
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    final result = await _service.getAIs();
+    if (!mounted) return;
+    setState(() {
+      _loading = false;
+      _error = result.success ? null : result.message;
+      if (result.success) {
+        _assistants
+          ..clear()
+          ..addAll(result.data ?? []);
+      }
+    });
+  }
+
+  void _upsert(AIModel ai) => setState(() {
+    final i = _assistants.indexWhere((a) => a.id == ai.id);
+    if (i < 0) {
+      _assistants.add(ai);
+    } else {
+      _assistants[i] = ai;
+    }
   });
+  void _chat([AIModel? ai]) => setState(() {
+    _chatAI = ai?.id;
+    _index = 2;
+  });
+  void _logout() => Navigator.of(context).pushAndRemoveUntil(
+    MaterialPageRoute<void>(builder: (_) => const AuthScreen()),
+    (_) => false,
+  );
+  @override
+  Widget build(BuildContext context) => AnimatedTheme(
+    data: WorkspaceTheme.create(_dark),
+    duration: const Duration(milliseconds: 260),
+    child: Builder(
+      builder: (context) => LayoutBuilder(
+        builder: (context, box) {
+          final desktop = box.maxWidth >= 840;
+          final c = Theme.of(context).colorScheme;
+          return Scaffold(
+            drawer: desktop
+                ? null
+                : Drawer(
+                    backgroundColor: c.surface,
+                    child: SafeArea(
+                      child: _sidebar(context, true, mobile: true),
+                    ),
+                  ),
+            body: SafeArea(
+              child: Column(
+                children: [
+                  Container(
+                    height: 78,
+                    padding: EdgeInsets.symmetric(
+                      horizontal: desktop ? 28 : 12,
+                    ),
+                    decoration: BoxDecoration(
+                      color: c.surface,
+                      border: Border(
+                        bottom: BorderSide(color: c.outlineVariant),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        if (!desktop)
+                          Builder(
+                            builder: (context) => IconButton(
+                              tooltip: 'Open menu',
+                              onPressed: () =>
+                                  Scaffold.of(context).openDrawer(),
+                              icon: const Icon(Icons.menu_rounded),
+                            ),
+                          ),
+                        if (desktop) ...[
+                          Container(
+                            width: 36,
+                            height: 36,
+                            decoration: BoxDecoration(
+                              gradient: WorkspaceTheme.gradient,
+                              borderRadius: BorderRadius.circular(11),
+                            ),
+                            child: const Icon(
+                              Icons.hub_rounded,
+                              color: Colors.white,
+                              size: 21,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                        ],
+                        Expanded(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'NexaSmart- AI',
+                                maxLines: 1,
+                                style: TextStyle(
+                                  fontSize: desktop ? 18 : 14,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: -.5,
+                                ),
+                              ),
+                              if (desktop)
+                                Text(
+                                  'A space for your intelligence',
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    color: c.onSurfaceVariant,
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                        if (desktop) ...[
+                          Container(
+                            width: 1,
+                            height: 30,
+                            color: c.outlineVariant,
+                          ),
+                          const SizedBox(width: 24),
+                        ],
+                        _LiveClock(compact: !desktop),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: Row(
+                      children: [
+                        if (desktop)
+                          AnimatedContainer(
+                            duration: const Duration(milliseconds: 260),
+                            curve: Curves.easeInOutCubic,
+                            width: _expanded ? 246 : 84,
+                            child: _sidebar(context, _expanded),
+                          ),
+                        Expanded(
+                          child: Column(
+                            children: [
+                              if (_loading)
+                                const LinearProgressIndicator(minHeight: 2),
+                              if (_error != null)
+                                MaterialBanner(
+                                  content: Text(_error!),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: _load,
+                                      child: const Text('Retry'),
+                                    ),
+                                  ],
+                                ),
+                              Expanded(
+                                child: PageEntrance(
+                                  key: ValueKey(_index),
+                                  child: _page(),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    ),
+  );
+
+  Widget _sidebar(BuildContext context, bool expanded, {bool mobile = false}) {
+    final c = Theme.of(context).colorScheme;
+    void select(int i) {
+      if (mobile) Navigator.pop(context);
+      setState(() => _index = i);
+    }
+
+    Widget item(
+      String label,
+      IconData icon,
+      VoidCallback onTap, {
+      bool selected = false,
+      Widget? leading,
+      String? subtitle,
+    }) => Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      child: Tooltip(
+        message: label,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(14),
+            gradient: selected ? WorkspaceTheme.gradient : null,
+          ),
+          child: Material(
+            color: Colors.transparent,
+            borderRadius: BorderRadius.circular(14),
+            child: InkWell(
+              onTap: onTap,
+              borderRadius: BorderRadius.circular(14),
+              child: SizedBox(
+                height: 52,
+                child: LayoutBuilder(
+                  builder: (context, box) {
+                    // Border and fractional device scaling must not consume the icon's last pixel.
+                    final labelsFit = expanded && box.maxWidth >= 150;
+                    final iconWidget =
+                        leading ??
+                        Icon(
+                          icon,
+                          size: 21,
+                          color: selected ? Colors.white : c.onSurfaceVariant,
+                        );
+                    if (!labelsFit) return Center(child: iconWidget);
+                    return Row(
+                      children: [
+                        SizedBox(width: 48, child: Center(child: iconWidget)),
+                        Expanded(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                label,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  color: selected ? Colors.white : c.onSurface,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              if (subtitle != null)
+                                Text(
+                                  subtitle,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    color: selected
+                                        ? Colors.white70
+                                        : c.onSurfaceVariant,
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                      ],
+                    );
+                  },
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    return Container(
+      decoration: BoxDecoration(
+        color: c.surface,
+        border: Border(right: BorderSide(color: c.outlineVariant)),
+      ),
+      child: Column(
+        children: [
+          const SizedBox(height: 16),
+          item(
+            mobile
+                ? 'Close menu'
+                : (expanded ? 'Collapse sidebar' : 'Expand sidebar'),
+            expanded
+                ? Icons.keyboard_double_arrow_left_rounded
+                : Icons.keyboard_double_arrow_right_rounded,
+            () {
+              if (mobile) {
+                Navigator.pop(context);
+              } else {
+                setState(() => _expanded = !_expanded);
+              }
+            },
+          ),
+          const SizedBox(height: 16),
+          Expanded(
+            child: ListView(
+              padding: EdgeInsets.zero,
+              children: [
+                for (var i = 0; i < _labels.length; i++)
+                  item(
+                    _labels[i],
+                    _icons[i],
+                    () => select(i),
+                    selected: i == _index,
+                  ),
+              ],
+            ),
+          ),
+          const Divider(indent: 20, endIndent: 20, height: 24),
+          item(
+            _dark ? 'Light mode' : 'Dark mode',
+            _dark ? Icons.light_mode_outlined : Icons.dark_mode_outlined,
+            () => setState(() => _dark = !_dark),
+          ),
+          item(
+            'Profile',
+            Icons.person_outline,
+            () => select(4),
+            selected: _index == 4,
+            subtitle: '@${_user.username}',
+            leading: AppAvatar(
+              source: _user.avatar,
+              fallback: _user.username,
+              radius: 16,
+            ),
+          ),
+          const SizedBox(height: 20),
+        ],
+      ),
+    );
+  }
+
+  Widget _page() {
+    switch (_index) {
+      case 1:
+        return AIStudioPage(
+          service: _service,
+          assistants: _assistants,
+          onCreated: _upsert,
+          onOpenChat: _chat,
+        );
+      case 2:
+        return ChatPage(
+          service: _service,
+          assistants: _assistants,
+          initialAIId: _chatAI,
+          onAIUpdated: _upsert,
+          onCreateAI: () => setState(() => _index = 1),
+        );
+      case 3:
+        return Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(28),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 520),
+              child: WorkspaceCard(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const OrbitArt(size: 150),
+                    const SizedBox(height: 20),
+                    const Text(
+                      'A fresh perspective, soon.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 25,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'Your space for news and insights is taking shape.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        height: 1.6,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    const StatusPill(
+                      'Coming soon',
+                      icon: Icons.insights_rounded,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      case 4:
+        return ProfilePanel(
+          user: _user,
+          service: _service,
+          embedded: true,
+          onSaved: (user) => setState(() => _user = user),
+          onLogout: _logout,
+        );
+      default:
+        return DashboardPage(
+          user: _user,
+          assistants: _assistants,
+          onCreateAI: () => setState(() => _index = 1),
+          onOpenChat: _chat,
+        );
+    }
+  }
+}
+
+class _LiveClock extends StatefulWidget {
+  final bool compact;
+  const _LiveClock({required this.compact});
+  @override
+  State<_LiveClock> createState() => _LiveClockState();
+}
+
+class _LiveClockState extends State<_LiveClock> {
+  DateTime _now = DateTime.now();
+  late final Timer _timer;
+  @override
+  void initState() {
+    super.initState();
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (mounted) setState(() => _now = DateTime.now());
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final displayName = user.displayName?.isNotEmpty == true
-        ? user.displayName!
-        : user.username;
-
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: const Text(
-          'Jarvis Dashboard',
-          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 18),
-        ),
-        flexibleSpace: Container(
-          decoration: const BoxDecoration(
-            gradient: AppColors.brandGradient,
+    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
+    String pad(int n) => n.toString().padLeft(2, '0');
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        Text(
+          '${pad(_now.hour)}:${pad(_now.minute)}:${pad(_now.second)}',
+          style: TextStyle(
+            fontSize: widget.compact ? 17 : 22,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 1,
           ),
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout_rounded, color: Colors.white),
-            tooltip: 'Keluar Akun',
-            onPressed: () => _handleLogout(context),
-          ),
-        ],
-        elevation: 0,
-      ),
-      body: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 580),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // Welcome Header Card
-                Container(
-                  padding: const EdgeInsets.all(28.0),
-                  decoration: BoxDecoration(
-                    gradient: AppColors.heroGradient,
-                    borderRadius: BorderRadius.circular(24),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.primaryRoyal.withValues(alpha: 0.3),
-                        blurRadius: 24,
-                        offset: const Offset(0, 10),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    children: [
-                      CircleAvatar(
-                        radius: 44,
-                        backgroundColor: AppColors.accentCyan.withValues(alpha: 0.2),
-                        child: CircleAvatar(
-                          radius: 38,
-                          backgroundColor: AppColors.heroCardSurface,
-                          child: Text(
-                            displayName.isNotEmpty ? displayName[0].toUpperCase() : 'U',
-                            style: const TextStyle(
-                              fontSize: 32,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.accentCyanLight,
-                            ),
-                          ),
-                        ),
-                      )
-                          .animate()
-                          .scale(duration: 450.ms, curve: Curves.easeOutBack),
-                      const SizedBox(height: 16),
-                      Text(
-                        'Selamat Datang, $displayName!',
-                        style: const TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                        textAlign: TextAlign.center,
-                      ).animate().fadeIn(delay: 200.ms),
-                      const SizedBox(height: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.accentCyan.withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: AppColors.accentCyanLight.withValues(alpha: 0.4),
-                          ),
-                        ),
-                        child: Text(
-                          user.role?.toUpperCase() ?? 'USER',
-                          style: const TextStyle(
-                            color: AppColors.accentCyanLight,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            letterSpacing: 1.2,
-                          ),
-                        ),
-                      ).animate().fadeIn(delay: 300.ms),
-                    ],
-                  ),
-                )
-                    .animate()
-                    .fadeIn(duration: 400.ms)
-                    .slideY(begin: 0.08, end: 0),
-                const SizedBox(height: 24),
-
-                // Profile Detail Card
-                Container(
-                  padding: const EdgeInsets.all(24.0),
-                  decoration: BoxDecoration(
-                    color: AppColors.surface,
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: AppColors.border),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.04),
-                        blurRadius: 18,
-                        offset: const Offset(0, 6),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              color: AppColors.primaryBlue.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: const Icon(
-                              Icons.verified_user_outlined,
-                              color: AppColors.primaryBlue,
-                            ),
-                          ),
-                          const SizedBox(width: 14),
-                          const Text(
-                            'Informasi Profil Akun',
-                            style: TextStyle(
-                              fontSize: 17,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.textPrimary,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const Divider(height: 32, color: AppColors.border),
-                      _buildInfoTile(
-                        icon: Icons.alternate_email_rounded,
-                        label: 'Username',
-                        value: user.username,
-                      ),
-                      _buildInfoTile(
-                        icon: Icons.email_outlined,
-                        label: 'Email Terdaftar',
-                        value: user.email,
-                      ),
-                      if (user.displayName != null && user.displayName!.isNotEmpty)
-                        _buildInfoTile(
-                          icon: Icons.badge_outlined,
-                          label: 'Nama Lengkap',
-                          value: user.displayName!,
-                        ),
-                      _buildInfoTile(
-                        icon: Icons.shield_outlined,
-                        label: 'Status Akun',
-                        value: user.isVerified == true ? 'Terverifikasi' : 'Aktif',
-                        valueColor: AppColors.success,
-                      ),
-                    ],
-                  ),
-                )
-                    .animate()
-                    .fadeIn(delay: 200.ms, duration: 400.ms)
-                    .slideY(begin: 0.08, end: 0),
-                const SizedBox(height: 28),
-
-                // Logout Button
-                OutlinedButton.icon(
-                  onPressed: () => _handleLogout(context),
-                  icon: const Icon(Icons.logout_rounded, color: AppColors.error),
-                  label: const Text(
-                    'Keluar dari Akun',
-                    style: TextStyle(
-                      color: AppColors.error,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 15,
-                    ),
-                  ),
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    side: const BorderSide(color: AppColors.error),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                  ),
-                ).animate().fadeIn(delay: 350.ms),
-              ],
-            ),
+        Text(
+          '${days[_now.weekday - 1]}, ${_now.day} ${months[_now.month - 1]} ${_now.year}',
+          style: TextStyle(
+            fontSize: widget.compact ? 9 : 11,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildInfoTile({
-    required IconData icon,
-    required String label,
-    required String value,
-    Color? valueColor,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, size: 20, color: AppColors.textSecondary),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  value,
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                    color: valueColor ?? AppColors.textPrimary,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _handleLogout(BuildContext context) {
-    Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (_) => const AuthScreen()),
-      (route) => false,
+      ],
     );
   }
 }

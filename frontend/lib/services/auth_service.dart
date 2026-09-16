@@ -18,10 +18,7 @@ class AuthService {
       final response = await _client.post(
         Uri.parse(ApiConstants.loginUrl),
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'email': email.trim(),
-          'password': password,
-        }),
+        body: jsonEncode({'email': email.trim(), 'password': password}),
       );
 
       final Map<String, dynamic> json = jsonDecode(response.body);
@@ -45,7 +42,8 @@ class AuthService {
     } on SocketException {
       return AuthResult(
         success: false,
-        message: 'Gagal terhubung ke backend. Pastikan server backend berjalan.',
+        message:
+            'Gagal terhubung ke backend. Pastikan server backend berjalan.',
       );
     } catch (e) {
       return AuthResult(
@@ -96,7 +94,8 @@ class AuthService {
     } on SocketException {
       return AuthResult(
         success: false,
-        message: 'Gagal terhubung ke backend. Pastikan server backend berjalan.',
+        message:
+            'Gagal terhubung ke backend. Pastikan server backend berjalan.',
       );
     } catch (e) {
       return AuthResult(
@@ -108,7 +107,8 @@ class AuthService {
 
   /// Helper to extract error message and validation issues from backend response
   AuthResult _handleErrorResponse(int statusCode, Map<String, dynamic> json) {
-    String message = json['message'] as String? ?? 'Terjadi kesalahan ($statusCode)';
+    String message =
+        json['message'] as String? ?? 'Terjadi kesalahan ($statusCode)';
     List<String> issuesList = [];
 
     if (json['issues'] is List) {

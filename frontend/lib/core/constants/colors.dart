@@ -9,8 +9,8 @@ class AppColors {
   static const Color primaryBlueLight = Color(0xFF3B82F6);
 
   // Modern Complementary Accents (Futuristic & Sophisticated)
-  static const Color accentCyan = Color(0xFF0EA5E9);
-  static const Color accentCyanLight = Color(0xFF38BDF8);
+  static const Color accentCyan = Color(0xFF0D9488);
+  static const Color accentCyanLight = Color(0xFF5EEAD4);
   static const Color accentIndigo = Color(0xFF6366F1);
   static const Color accentIndigoLight = Color(0xFF818CF8);
 
@@ -25,8 +25,8 @@ class AppColors {
   static const Color borderActive = Color(0xFF3B82F6);
 
   // Dark Theme / Glass Surfaces for Hero
-  static const Color heroDark = Color(0xFF0A1128);
-  static const Color heroCardSurface = Color(0xFF141F36);
+  static const Color heroDark = Color(0xFF071A25);
+  static const Color heroCardSurface = Color(0xFF102D3B);
 
   // Status Tones
   static const Color error = Color(0xFFEF4444);
@@ -34,25 +34,25 @@ class AppColors {
 
   // Gradients
   static const LinearGradient brandGradient = LinearGradient(
-    colors: [primaryRoyal, primaryBlue, accentCyan],
+    colors: [Color(0xFF1D4ED8), Color(0xFF0284C7), Color(0xFF0D9488)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
   static const LinearGradient buttonGradient = LinearGradient(
-    colors: [primaryBlue, accentIndigo],
+    colors: [Color(0xFF2563EB), Color(0xFF0D9488)],
     begin: Alignment.centerLeft,
     end: Alignment.centerRight,
   );
 
   static const LinearGradient heroGradient = LinearGradient(
-    colors: [Color(0xFF070B19), Color(0xFF0F1E46), Color(0xFF132F6E)],
+    colors: [Color(0xFF071826), Color(0xFF0B3150), Color(0xFF0B5C5A)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
   static const LinearGradient cardGlowGradient = LinearGradient(
-    colors: [Color(0xFF2563EB), Color(0xFF06B6D4)],
+    colors: [Color(0xFF3B82F6), Color(0xFF10B981)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );

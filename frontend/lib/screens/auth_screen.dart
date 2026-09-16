@@ -11,10 +11,7 @@ enum AuthMode { login, register }
 class AuthScreen extends StatefulWidget {
   final AuthMode initialMode;
 
-  const AuthScreen({
-    super.key,
-    this.initialMode = AuthMode.login,
-  });
+  const AuthScreen({super.key, this.initialMode = AuthMode.login});
 
   @override
   State<AuthScreen> createState() => _AuthScreenState();
@@ -53,7 +50,8 @@ class _AuthScreenState extends State<AuthScreen> {
   }
 
   void _switchMode(AuthMode mode) {
-    if (_currentMode != mode) {
+    if (_currentMode != mode && !_isLoading) {
+      FocusScope.of(context).unfocus();
       setState(() {
         _currentMode = mode;
         _formKey.currentState?.reset();
@@ -78,15 +76,14 @@ class _AuthScreenState extends State<AuthScreen> {
 
       if (result.success && result.user != null) {
         _showNotification(
-          message: result.message.isNotEmpty ? result.message : 'Login berhasil!',
+          message: result.message.isNotEmpty
+              ? result.message
+              : 'Login berhasil!',
           isSuccess: true,
         );
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
-            builder: (_) => HomeScreen(
-              user: result.user!,
-              token: result.token,
-            ),
+            builder: (_) => HomeScreen(user: result.user!, token: result.token),
           ),
         );
       } else {
@@ -120,15 +117,13 @@ class _AuthScreenState extends State<AuthScreen> {
 
         if (loginResult.success && loginResult.user != null) {
           _showNotification(
-            message: 'Pendaftaran berhasil! Selamat datang di Jarvis AI.',
+            message: 'Pendaftaran berhasil! Selamat datang di NexaSmart-AI.',
             isSuccess: true,
           );
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(
-              builder: (_) => HomeScreen(
-                user: loginResult.user!,
-                token: loginResult.token,
-              ),
+              builder: (_) =>
+                  HomeScreen(user: loginResult.user!, token: loginResult.token),
             ),
           );
         } else {
@@ -170,7 +165,11 @@ class _AuthScreenState extends State<AuthScreen> {
             Expanded(
               child: Text(
                 message,
-                style: const TextStyle(color: Colors.white, fontSize: 13, height: 1.4),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 13,
+                  height: 1.4,
+                ),
               ),
             ),
           ],
@@ -196,16 +195,16 @@ class _AuthScreenState extends State<AuthScreen> {
             // Desktop Windows Split Screen
             return Row(
               children: [
-                const Expanded(
-                  flex: 5,
-                  child: DesktopBrandPanel(),
-                ),
+                const Expanded(flex: 5, child: DesktopBrandPanel()),
                 Expanded(
                   flex: 6,
                   child: AnimatedBackground(
                     child: Center(
                       child: SingleChildScrollView(
-                        padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 32),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 48,
+                          vertical: 32,
+                        ),
                         child: ConstrainedBox(
                           constraints: const BoxConstraints(maxWidth: 460),
                           child: _buildAuthCard(),
@@ -223,7 +222,10 @@ class _AuthScreenState extends State<AuthScreen> {
             child: SafeArea(
               child: Center(
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 24,
+                  ),
                   child: ConstrainedBox(
                     constraints: const BoxConstraints(maxWidth: 440),
                     child: Column(
@@ -265,13 +267,10 @@ class _AuthScreenState extends State<AuthScreen> {
             color: Colors.white,
             size: 34,
           ),
-        )
-            .animate()
-            .scale(duration: 400.ms, curve: Curves.easeOutBack)
-            .fadeIn(),
+        ).animate().scale(duration: 400.ms, curve: Curves.easeOutBack).fadeIn(),
         const SizedBox(height: 12),
         const Text(
-          'Jarvis AI Assistant',
+          'NexaSmart-AI',
           style: TextStyle(
             fontSize: 22,
             fontWeight: FontWeight.bold,
@@ -282,10 +281,7 @@ class _AuthScreenState extends State<AuthScreen> {
         const Text(
           'Satu asisten cerdas untuk semua kebutuhan Anda',
           textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 13,
-            color: AppColors.textSecondary,
-          ),
+          style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
         ).animate().fadeIn(delay: 250.ms),
       ],
     );
@@ -295,116 +291,142 @@ class _AuthScreenState extends State<AuthScreen> {
     final isLogin = _currentMode == AuthMode.login;
 
     return Container(
-      padding: const EdgeInsets.all(28.0),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppColors.border),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.primaryNavy.withValues(alpha: 0.06),
-            blurRadius: 28,
-            offset: const Offset(0, 10),
+          padding: const EdgeInsets.all(28.0),
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: AppColors.border),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.primaryNavy.withValues(alpha: 0.06),
+                blurRadius: 28,
+                offset: const Offset(0, 10),
+              ),
+            ],
           ),
-        ],
-      ),
-      child: Form(
-        key: _formKey,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Sliding Pill Mode Switcher (Login / Register)
-            _buildModeSwitcher(),
-            const SizedBox(height: 24),
-
-            // Card Header Title
-            Text(
-              isLogin ? 'Masuk ke Akun' : 'Daftar Akun Baru',
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: AppColors.primaryNavy,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              isLogin
-                  ? 'Masukkan kredensial Anda untuk melanjutkan'
-                  : 'Lengkapi data di bawah ini untuk membuat akun',
-              style: const TextStyle(
-                fontSize: 13,
-                color: AppColors.textSecondary,
-              ),
-            ),
-            const SizedBox(height: 20),
-
-            // Animated Form Content Switcher
-            AnimatedSize(
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeInOutCubic,
-              alignment: Alignment.topCenter,
-              child: AnimatedSwitcher(
-                duration: const Duration(milliseconds: 250),
-                switchInCurve: Curves.easeOut,
-                switchOutCurve: Curves.easeIn,
-                transitionBuilder: (child, animation) {
-                  return FadeTransition(
-                    opacity: animation,
-                    child: SlideTransition(
-                      position: Tween<Offset>(
-                        begin: const Offset(0, 0.04),
-                        end: Offset.zero,
-                      ).animate(animation),
-                      child: child,
-                    ),
-                  );
-                },
-                child: KeyedSubtree(
-                  key: ValueKey<AuthMode>(_currentMode),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: isLogin ? _buildLoginFields() : _buildRegisterFields(),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 24),
-
-            // Submit Button with Shimmer Animation
-            _buildSubmitButton(),
-            const SizedBox(height: 20),
-
-            // Bottom Switcher helper text
-            Wrap(
-              alignment: WrapAlignment.center,
-              crossAxisAlignment: WrapCrossAlignment.center,
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                // Sliding Pill Mode Switcher (Login / Register)
+                _buildModeSwitcher(),
+                const SizedBox(height: 24),
+
+                // Card Header Title
                 Text(
-                  isLogin ? 'Belum memiliki akun? ' : 'Sudah memiliki akun? ',
+                  isLogin ? 'Masuk ke Akun' : 'Daftar Akun Baru',
                   style: const TextStyle(
-                    color: AppColors.textSecondary,
-                    fontSize: 13,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.primaryNavy,
                   ),
                 ),
-                GestureDetector(
-                  onTap: () => _switchMode(isLogin ? AuthMode.register : AuthMode.login),
-                  child: Text(
-                    isLogin ? 'Daftar Sekarang' : 'Masuk',
-                    style: const TextStyle(
-                      color: AppColors.primaryBlue,
-                      fontSize: 13,
-                      fontWeight: FontWeight.bold,
-                      decoration: TextDecoration.underline,
-                      decorationColor: AppColors.primaryBlue,
+                const SizedBox(height: 4),
+                Text(
+                  isLogin
+                      ? 'Masukkan kredensial Anda untuk melanjutkan'
+                      : 'Lengkapi data di bawah ini untuk membuat akun',
+                  style: const TextStyle(
+                    fontSize: 13,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+                const SizedBox(height: 20),
+
+                // Animated Form Content Switcher
+                AnimatedSize(
+                  duration: const Duration(milliseconds: 380),
+                  curve: Curves.easeInOutCubic,
+                  alignment: Alignment.topCenter,
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 280),
+                    reverseDuration: const Duration(milliseconds: 140),
+                    layoutBuilder: (currentChild, previousChildren) => Stack(
+                      alignment: Alignment.topCenter,
+                      children: [
+                        for (final previous in previousChildren)
+                          Positioned.fill(
+                            child: IgnorePointer(
+                              child: ExcludeFocus(
+                                child: OverflowBox(
+                                  alignment: Alignment.topCenter,
+                                  minHeight: 0,
+                                  maxHeight: double.infinity,
+                                  child: previous,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ?currentChild,
+                      ],
+                    ),
+                    switchInCurve: Curves.easeOut,
+                    switchOutCurve: Curves.easeIn,
+                    transitionBuilder: (child, animation) {
+                      return FadeTransition(
+                        opacity: animation,
+                        child: SlideTransition(
+                          position: Tween<Offset>(
+                            begin: const Offset(0, 0.04),
+                            end: Offset.zero,
+                          ).animate(animation),
+                          child: child,
+                        ),
+                      );
+                    },
+                    child: KeyedSubtree(
+                      key: ValueKey<AuthMode>(_currentMode),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: isLogin
+                            ? _buildLoginFields()
+                            : _buildRegisterFields(),
+                      ),
                     ),
                   ),
+                ),
+                const SizedBox(height: 24),
+
+                // Submit Button with Shimmer Animation
+                _buildSubmitButton(),
+                const SizedBox(height: 20),
+
+                // Bottom Switcher helper text
+                Wrap(
+                  alignment: WrapAlignment.center,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    Text(
+                      isLogin
+                          ? 'Belum memiliki akun? '
+                          : 'Sudah memiliki akun? ',
+                      style: const TextStyle(
+                        color: AppColors.textSecondary,
+                        fontSize: 13,
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () => _switchMode(
+                        isLogin ? AuthMode.register : AuthMode.login,
+                      ),
+                      child: Text(
+                        isLogin ? 'Daftar Sekarang' : 'Masuk',
+                        style: const TextStyle(
+                          color: AppColors.primaryBlue,
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                          decoration: TextDecoration.underline,
+                          decorationColor: AppColors.primaryBlue,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
-          ],
-        ),
-      ),
-    )
+          ),
+        )
         .animate()
         .fadeIn(duration: 400.ms)
         .slideY(begin: 0.06, end: 0, curve: Curves.easeOutCubic);
@@ -460,7 +482,9 @@ class _AuthScreenState extends State<AuthScreen> {
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: isLogin ? FontWeight.bold : FontWeight.w500,
-                        color: isLogin ? AppColors.primaryBlue : AppColors.textSecondary,
+                        color: isLogin
+                            ? AppColors.primaryBlue
+                            : AppColors.textSecondary,
                       ),
                     ),
                   ),
@@ -475,8 +499,12 @@ class _AuthScreenState extends State<AuthScreen> {
                       'Daftar Akun',
                       style: TextStyle(
                         fontSize: 14,
-                        fontWeight: !isLogin ? FontWeight.bold : FontWeight.w500,
-                        color: !isLogin ? AppColors.primaryBlue : AppColors.textSecondary,
+                        fontWeight: !isLogin
+                            ? FontWeight.bold
+                            : FontWeight.w500,
+                        color: !isLogin
+                            ? AppColors.primaryBlue
+                            : AppColors.textSecondary,
                       ),
                     ),
                   ),
@@ -525,7 +553,9 @@ class _AuthScreenState extends State<AuthScreen> {
           prefixIcon: Icons.lock_outline,
           suffixIcon: IconButton(
             icon: Icon(
-              _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+              _obscurePassword
+                  ? Icons.visibility_off_outlined
+                  : Icons.visibility_outlined,
               color: AppColors.textSecondary,
               size: 20,
             ),
@@ -610,7 +640,9 @@ class _AuthScreenState extends State<AuthScreen> {
           prefixIcon: Icons.lock_outline,
           suffixIcon: IconButton(
             icon: Icon(
-              _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+              _obscurePassword
+                  ? Icons.visibility_off_outlined
+                  : Icons.visibility_outlined,
               color: AppColors.textSecondary,
               size: 20,
             ),
@@ -645,12 +677,16 @@ class _AuthScreenState extends State<AuthScreen> {
           prefixIcon: Icons.lock_reset_outlined,
           suffixIcon: IconButton(
             icon: Icon(
-              _obscureConfirmPassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+              _obscureConfirmPassword
+                  ? Icons.visibility_off_outlined
+                  : Icons.visibility_outlined,
               color: AppColors.textSecondary,
               size: 20,
             ),
             onPressed: () {
-              setState(() => _obscureConfirmPassword = !_obscureConfirmPassword);
+              setState(
+                () => _obscureConfirmPassword = !_obscureConfirmPassword,
+              );
             },
           ),
         ),
@@ -671,60 +707,66 @@ class _AuthScreenState extends State<AuthScreen> {
     final isLogin = _currentMode == AuthMode.login;
 
     return Container(
-      height: 48,
-      decoration: BoxDecoration(
-        gradient: AppColors.buttonGradient,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.primaryBlue.withValues(alpha: 0.35),
-            blurRadius: 14,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: ElevatedButton(
-        onPressed: _isLoading ? null : _handleSubmit,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.transparent,
-          shadowColor: Colors.transparent,
-          shape: RoundedRectangleBorder(
+          height: 48,
+          decoration: BoxDecoration(
+            gradient: AppColors.buttonGradient,
             borderRadius: BorderRadius.circular(12),
-          ),
-        ),
-        child: _isLoading
-            ? const SizedBox(
-                height: 20,
-                width: 20,
-                child: CircularProgressIndicator(
-                  color: Colors.white,
-                  strokeWidth: 2.2,
-                ),
-              )
-            : Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    isLogin ? 'Masuk ke Jarvis' : 'Buat Akun Saya',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 0.3,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Icon(
-                    isLogin ? Icons.arrow_forward_rounded : Icons.person_add_rounded,
-                    color: Colors.white,
-                    size: 18,
-                  ),
-                ],
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.primaryBlue.withValues(alpha: 0.35),
+                blurRadius: 14,
+                offset: const Offset(0, 4),
               ),
-      ),
-    )
+            ],
+          ),
+          child: ElevatedButton(
+            onPressed: _isLoading ? null : _handleSubmit,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.transparent,
+              shadowColor: Colors.transparent,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child: _isLoading
+                ? const SizedBox(
+                    height: 20,
+                    width: 20,
+                    child: CircularProgressIndicator(
+                      color: Colors.white,
+                      strokeWidth: 2.2,
+                    ),
+                  )
+                : Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        isLogin ? 'Masuk ke NexaSmart' : 'Buat Akun Saya',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.3,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Icon(
+                        isLogin
+                            ? Icons.arrow_forward_rounded
+                            : Icons.person_add_rounded,
+                        color: Colors.white,
+                        size: 18,
+                      ),
+                    ],
+                  ),
+          ),
+        )
         .animate(target: _isLoading ? 0 : 1)
-        .shimmer(delay: 2000.ms, duration: 1200.ms, color: Colors.white.withValues(alpha: 0.2));
+        .shimmer(
+          delay: 2000.ms,
+          duration: 1200.ms,
+          color: Colors.white.withValues(alpha: 0.2),
+        );
   }
 
   Widget _buildLabel(String text) {

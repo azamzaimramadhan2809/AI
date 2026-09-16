@@ -1,0 +1,28 @@
+^C:\USERS\LENOVO\DOCUMENTS\CODEX\AI-ASISTANT\FRONTEND\BUILD\WINDOWS\X64\CMAKEFILES\4F7C758276FCFAA45E06FA12A6F02275\FLUTTER_WINDOWS.DLL.RULE
+setlocal
+"C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E env FLUTTER_ROOT=C:\src\flutter PROJECT_DIR=C:\Users\LENOVO\Documents\Codex\AI-Asistant\frontend FLUTTER_ROOT=C:\src\flutter FLUTTER_EPHEMERAL_DIR=C:\Users\LENOVO\Documents\Codex\AI-Asistant\frontend\windows\flutter\ephemeral PROJECT_DIR=C:\Users\LENOVO\Documents\Codex\AI-Asistant\frontend FLUTTER_TARGET=C:\Users\LENOVO\Documents\Codex\AI-Asistant\frontend\lib\main.dart DART_DEFINES=RkxVVFRFUl9WRVJTSU9OPTMuNDQuOA==,RkxVVFRFUl9DSEFOTkVMPXN0YWJsZQ==,RkxVVFRFUl9HSVRfVVJMPWh0dHBzOi8vZ2l0aHViLmNvbS9mbHV0dGVyL2ZsdXR0ZXIuZ2l0,RkxVVFRFUl9GUkFNRVdPUktfUkVWSVNJT049MDU4ZTBhZjJjMg==,RkxVVFRFUl9FTkdJTkVfUkVWSVNJT049MGNkNjEwNzE3Yg==,RkxVVFRFUl9EQVJUX1ZFUlNJT049My4xMi4y DART_OBFUSCATION=false TRACK_WIDGET_CREATION=true TREE_SHAKE_ICONS=false PACKAGE_CONFIG=C:\Users\LENOVO\Documents\Codex\AI-Asistant\frontend\.dart_tool\package_config.json C:/src/flutter/packages/flutter_tools/bin/tool_backend.bat windows-x64 Debug
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
+^C:\USERS\LENOVO\DOCUMENTS\CODEX\AI-ASISTANT\FRONTEND\BUILD\WINDOWS\X64\CMAKEFILES\A3BFBFDCD21223C677240CF19C86719A\FLUTTER_ASSEMBLE.RULE
+setlocal
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
+^C:\USERS\LENOVO\DOCUMENTS\CODEX\AI-ASISTANT\FRONTEND\WINDOWS\FLUTTER\CMAKELISTS.TXT
+setlocal
+"C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -SC:/Users/LENOVO/Documents/Codex/AI-Asistant/frontend/windows -BC:/Users/LENOVO/Documents/Codex/AI-Asistant/frontend/build/windows/x64 --check-stamp-file C:/Users/LENOVO/Documents/Codex/AI-Asistant/frontend/build/windows/x64/flutter/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

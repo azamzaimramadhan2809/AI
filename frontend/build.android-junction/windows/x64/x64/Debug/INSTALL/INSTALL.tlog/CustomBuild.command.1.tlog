@@ -1,0 +1,10 @@
+^C:\USERS\LENOVO\DOCUMENTS\CODEX\AI-ASISTANT\FRONTEND\BUILD\WINDOWS\X64\CMAKEFILES\9127E85F2A9B9ED0168FDEBD5F308A50\INSTALL_FORCE.RULE
+setlocal
+cd .
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

@@ -108,7 +108,10 @@ void main() {
             'success': false,
             'message': 'Invalid request',
             'issues': [
-              {'path': 'password', 'message': 'String must contain at least 8 character(s)'},
+              {
+                'path': 'password',
+                'message': 'String must contain at least 8 character(s)',
+              },
             ],
           }),
           400,
@@ -124,7 +127,10 @@ void main() {
       );
 
       expect(result.success, isFalse);
-      expect(result.message, contains('password: String must contain at least 8 character(s)'));
+      expect(
+        result.message,
+        contains('password: String must contain at least 8 character(s)'),
+      );
       expect(result.issues?.length, 1);
     });
   });

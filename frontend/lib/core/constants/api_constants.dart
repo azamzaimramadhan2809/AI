@@ -19,4 +19,7 @@ class ApiConstants {
   static String get loginUrl => '$baseUrl/api/auth/login';
   static String get registerUrl => '$baseUrl/api/auth/register';
   static String get meUrl => '$baseUrl/api/auth/me';
+  static String get profileUrl => '$baseUrl/api/users/profile';
+  static String get aiUrl => '$baseUrl/api/ai';
+  static String get chatUrl => '$baseUrl/api/chat/send';
 }

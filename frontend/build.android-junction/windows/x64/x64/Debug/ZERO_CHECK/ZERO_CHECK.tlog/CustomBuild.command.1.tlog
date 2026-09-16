@@ -1,0 +1,10 @@
+^C:\USERS\LENOVO\DOCUMENTS\CODEX\AI-ASISTANT\FRONTEND\BUILD\WINDOWS\X64\CMAKEFILES\9127E85F2A9B9ED0168FDEBD5F308A50\GENERATE.STAMP.RULE
+setlocal
+"C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -SC:/Users/LENOVO/Documents/Codex/AI-Asistant/frontend/windows -BC:/Users/LENOVO/Documents/Codex/AI-Asistant/frontend/build/windows/x64 --check-stamp-list CMakeFiles/generate.stamp.list --vs-solution-file C:/Users/LENOVO/Documents/Codex/AI-Asistant/frontend/build/windows/x64/jarvis.sln
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

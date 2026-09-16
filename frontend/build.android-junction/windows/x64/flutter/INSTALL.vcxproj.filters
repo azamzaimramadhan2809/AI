@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\LENOVO\Documents\Codex\AI-Asistant\frontend\build\windows\x64\CMakeFiles\a3bfbfdcd21223c677240cf19c86719a\INSTALL_force.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{7D49A469-5805-3015-8C5F-BA56215A2604}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

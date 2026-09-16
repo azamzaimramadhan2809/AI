@@ -35,9 +35,7 @@ class _AnimatedBackgroundState extends State<AnimatedBackground>
     return Stack(
       children: [
         // Base Background
-        Container(
-          color: AppColors.background,
-        ),
+        Container(color: AppColors.background),
 
         // Animated Ambient Glowing Orbs
         AnimatedBuilder(

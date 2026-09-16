@@ -89,6 +89,9 @@ endif()
 
 # Copy the native assets provided by the build.dart from all packages.
 set(NATIVE_ASSETS_DIR "${PROJECT_BUILD_DIR}native_assets/windows/")
+# Flutter can omit this directory when no dependency produces native assets,
+# while the generated install step still expects it to exist.
+file(MAKE_DIRECTORY "${NATIVE_ASSETS_DIR}")
 install(DIRECTORY "${NATIVE_ASSETS_DIR}"
    DESTINATION "${INSTALL_BUNDLE_LIB_DIR}"
    COMPONENT Runtime)

@@ -59,15 +59,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
               const Icon(Icons.check_circle, color: Colors.white),
               const SizedBox(width: 10),
               Expanded(
-                child: Text(regResult.message.isNotEmpty
-                    ? regResult.message
-                    : 'Pendaftaran berhasil! Menyambungkan...'),
+                child: Text(
+                  regResult.message.isNotEmpty
+                      ? regResult.message
+                      : 'Pendaftaran berhasil! Menyambungkan...',
+                ),
               ),
             ],
           ),
           backgroundColor: AppColors.accentGreenDark,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
         ),
       );
 
@@ -83,10 +87,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
       if (loginResult.success && loginResult.user != null) {
         Navigator.of(context).pushAndRemoveUntil(
           MaterialPageRoute(
-            builder: (_) => HomeScreen(
-              user: loginResult.user!,
-              token: loginResult.token,
-            ),
+            builder: (_) =>
+                HomeScreen(user: loginResult.user!, token: loginResult.token),
           ),
           (route) => false,
         );
@@ -107,7 +109,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
           ),
           backgroundColor: AppColors.error,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
         ),
       );
     }
@@ -121,14 +125,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: AppColors.primaryBlue),
+          icon: const Icon(
+            Icons.arrow_back_ios_new,
+            color: AppColors.primaryBlue,
+          ),
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 24.0,
+              vertical: 8.0,
+            ),
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 420),
               child: Column(
@@ -233,7 +243,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               if (value == null || value.trim().isEmpty) {
                                 return 'Email tidak boleh kosong';
                               }
-                              final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+                              final emailRegex = RegExp(
+                                r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                              );
                               if (!emailRegex.hasMatch(value.trim())) {
                                 return 'Format email tidak valid';
                               }
@@ -267,12 +279,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               prefixIcon: Icons.lock_outline,
                               suffixIcon: IconButton(
                                 icon: Icon(
-                                  _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                                  _obscurePassword
+                                      ? Icons.visibility_off_outlined
+                                      : Icons.visibility_outlined,
                                   color: AppColors.textSecondary,
                                   size: 20,
                                 ),
                                 onPressed: () {
-                                  setState(() => _obscurePassword = !_obscurePassword);
+                                  setState(
+                                    () => _obscurePassword = !_obscurePassword,
+                                  );
                                 },
                               ),
                             ),
@@ -304,12 +320,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               prefixIcon: Icons.lock_reset_outlined,
                               suffixIcon: IconButton(
                                 icon: Icon(
-                                  _obscureConfirmPassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                                  _obscureConfirmPassword
+                                      ? Icons.visibility_off_outlined
+                                      : Icons.visibility_outlined,
                                   color: AppColors.textSecondary,
                                   size: 20,
                                 ),
                                 onPressed: () {
-                                  setState(() => _obscureConfirmPassword = !_obscureConfirmPassword);
+                                  setState(
+                                    () => _obscureConfirmPassword =
+                                        !_obscureConfirmPassword,
+                                  );
                                 },
                               ),
                             ),
@@ -333,7 +354,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               borderRadius: BorderRadius.circular(12),
                               boxShadow: [
                                 BoxShadow(
-                                  color: AppColors.accentGreen.withValues(alpha: 0.35),
+                                  color: AppColors.accentGreen.withValues(
+                                    alpha: 0.35,
+                                  ),
                                   blurRadius: 12,
                                   offset: const Offset(0, 4),
                                 ),
@@ -358,7 +381,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                       ),
                                     )
                                   : const Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
                                       children: [
                                         Text(
                                           'Daftar Akun',
@@ -369,7 +393,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                           ),
                                         ),
                                         SizedBox(width: 8),
-                                        Icon(Icons.person_add, color: Colors.white, size: 18),
+                                        Icon(
+                                          Icons.person_add,
+                                          color: Colors.white,
+                                          size: 18,
+                                        ),
                                       ],
                                     ),
                             ),
@@ -451,7 +479,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: AppColors.accentGreenDark, width: 1.8),
+        borderSide: const BorderSide(
+          color: AppColors.accentGreenDark,
+          width: 1.8,
+        ),
       ),
     );
   }
